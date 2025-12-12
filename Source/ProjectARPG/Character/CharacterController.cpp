@@ -1,0 +1,91 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "CharacterController.h"
+#include "CharacterBase.h"
+#include "C_Aurora/Aurora.h"
+#include "C_Kallari/Kallari.h"
+#include "C_Muriel/Muriel.h"
+#include "C_Revenant/Revenant.h"
+#include "C_Terra/Terra.h"
+#include "C_TwinBlast/TwinBlast.h"
+
+
+ACharacterController::ACharacterController()
+{
+}
+
+void ACharacterController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	mCounterCamera = GetWorld()->SpawnActor<ACounterCamera>(ACounterCamera::StaticClass(), FVector(0, 0, 0), FRotator::ZeroRotator);
+}
+
+void ACharacterController::OnPossess(APawn* aPawn)
+{
+	Super::OnPossess(aPawn);
+}
+
+void ACharacterController::OnUnPossess()
+{
+	Super::OnUnPossess();
+}
+
+void ACharacterController::CharacterChange(FVector Postion, FRotator CameraRotation, float DirYaw)
+{
+	OnUnPossess();
+
+	ACharacterBase* MyCharacter = nullptr;
+	switch (mCharacterIndex)
+	{
+	case 0:
+		MyCharacter = GetWorld()->SpawnActor<AKallari>(AKallari::StaticClass(), FVector(0, 0, -10000), FRotator::ZeroRotator);
+		break;
+	case 1:
+		MyCharacter = GetWorld()->SpawnActor<AMuriel>(AMuriel::StaticClass(), FVector(0, 0, -10000), FRotator::ZeroRotator);
+		break;
+	case 2:
+		MyCharacter = GetWorld()->SpawnActor<ARevenant>(ARevenant::StaticClass(), FVector(0, 0, -10000), FRotator::ZeroRotator);
+		break;
+	case 3:
+		MyCharacter = GetWorld()->SpawnActor<ATerra>(ATerra::StaticClass(), FVector(0, 0, -10000), FRotator::ZeroRotator);
+		break;
+	case 4:
+		MyCharacter = GetWorld()->SpawnActor<ATwinBlast>(ATwinBlast::StaticClass(), FVector(0, 0, -10000), FRotator::ZeroRotator);
+		break;
+	case 5:
+		MyCharacter = GetWorld()->SpawnActor<AAurora>(AAurora::StaticClass(), FVector(0, 0, -10000), FRotator::ZeroRotator);
+		break;
+	}
+	mCharacterIndex += 1;
+	mCharacterIndex %= 6;
+	if (IsValid(MyCharacter))
+	{
+		MyCharacter->SetActorLocation(Postion);
+		MyCharacter->SetCameraRotation(CameraRotation);
+		MyCharacter->SetDirYaw(DirYaw);
+		OnPossess(MyCharacter);
+
+		if (mCounterEnable)
+		{
+			if (IsValid(mCounterCamera))
+			{
+				mCounterCamera->SetActorLocation(MyCharacter->GetActorLocation());
+				int32 i = FMath::RandRange(0, 1);
+				mCounterCamera->SetActorRotation(FRotator(2.5, DirYaw + 45*FMath::Pow(-1.0, i), 0));
+				SetViewTargetWithBlend(mCounterCamera, 0.1);
+				TSubclassOf<UCameraShakeBase> CSB = LoadClass<UCameraShakeBase>(GetWorld(), 
+					TEXT("/Script/Engine.Blueprint'/Game/CameraShake/BC_CounterChange.BC_CounterChange_C'"));
+				if (IsValid(CSB))
+					UGameplayStatics::PlayWorldCameraShake(GetWorld(), CSB, MyCharacter->GetActorLocation(), 0, 10000);
+				mCounterCamera->PostOn(true);
+			}
+			MyCharacter->CounterChange();
+
+			USoundBase* SB = LoadObject<USoundBase>(GetWorld(), TEXT("/Script/Engine.SoundWave'/Game/Sound/SW_Counter.SW_Counter'"));
+			if (IsValid(SB))
+				UGameplayStatics::PlaySound2D(GetWorld(), SB);
+		}
+	}
+}

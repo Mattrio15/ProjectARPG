@@ -1,0 +1,70 @@
+# Unreal Engine
+
+# Files to ignore (build products, user settings, etc.)
+
+# ***********************
+# Unreal Engine specific
+# ***********************
+
+# Cache and build files
+Intermediate/
+DerivedDataCache/
+.vs/
+.vscode/
+Binaries/
+Build/
+Saved/
+Plugins/Nvidia/
+Plugins/Wwise/
+
+# Visual Studio and IDE files
+*.VC.db
+*.opensdf
+*.sdf
+*.suo
+*.user
+*.sln.docstates
+*.v12.suo
+*.v14.suo
+*.tmp
+
+# Logs and crash reports
+*.log
+
+# Mac/Linux specific
+.DS_Store
+
+# ***********************
+# User specific
+# ***********************
+
+# User-specific settings that change frequently
+Config/DefaultEngine.ini
+Config/DefaultGame.ini
+Config/DefaultInput.ini
+
+# ***********************
+# Source Control specific
+# ***********************
+
+# Files managed by Git LFS (pointers only)
+!*.uasset
+!*.umap
+
+# Ignore the .gitattributes file itself, unless specifically needed
+.gitattributes
+
+# Ignore the generated project files if you only manage Source/
+# If you manage the full project structure, comment these out:
+# *.sln
+# *.vcxproj
+# *.vcxproj.filters
+# *.vcxproj.user
+
+# ***********************
+# Misc
+# ***********************
+
+# Windows executable files
+*.exe
+*.dll
