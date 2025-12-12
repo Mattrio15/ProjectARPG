@@ -92,12 +92,12 @@ void ACharacterBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (mDisappear)
-		SetActorLocation(GetActorLocation() - mDisappearDir * 2);
+		SetActorLocation(GetActorLocation() - mDisappearDir * 5);
 
 	if (mForward)
 	{
 		mForwardTimer += DeltaTime;
-		if (mForwardTimer < 0.3)
+		if (mForwardTimer < 0.5)
 			AddMovementInput(mDisappearDir, 1);
 		else
 		{
@@ -121,8 +121,11 @@ void ACharacterBase::Tick(float DeltaTime)
 				}
 				DodgeLen *= 2;
 			}
-			if(mMoving)
-				AddMovementInput(mDodgeDir, 1);
+			if (mMoving)
+			{
+				// AddMovementInput(mDodgeDir, 1);
+				SetActorLocation(GetActorLocation() + mDodgeDir * DodgeLen);
+			}
 			else
 				SetActorLocation(GetActorLocation() + mDodgeDir * DodgeLen);
 		}

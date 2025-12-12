@@ -40,8 +40,6 @@ ACharacterState::ACharacterState()
 
 	mItemComponent = CreateDefaultSubobject<UItemComponent>(TEXT("ItemComponent"));
 
-	Test(TEXT("ASD"));
-
 }
 
 UAbilitySystemComponent* ACharacterState::GetAbilitySystemComponent() const
