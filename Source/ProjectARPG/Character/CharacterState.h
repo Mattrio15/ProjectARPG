@@ -44,6 +44,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UItemComponent> mItemComponent;
+
+	TSubclassOf<UGameplayAbility> mGA_Dodge;
 	
 
 public:

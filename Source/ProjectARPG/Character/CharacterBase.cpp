@@ -381,9 +381,13 @@ void ACharacterBase::CharacterDodge(const FInputActionInstance& Instance)
 	AIB->StopAllMontages(0.1);
 	AIB->SetDodge(true);
 
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	FGameplayTagContainer Tag = ASC->GetOwnedGameplayTags();
+	mPDEnable = ASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.PDEnable")));
+
 	if (mPDEnable)
 	{
-		UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+		// UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 		if (IsValid(ASC))
 			ASC->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.NoDamage")));
 

@@ -65,9 +65,24 @@ void AMonsterController::OnUnPossess()
 
 void AMonsterController::SetPD()
 {
+	// ACharacterBase* CB = Cast<ACharacterBase>(Blackboard->GetValueAsObject(TEXT("Target")));
+	// if (IsValid(CB))
+	// 	CB->SetPDEnable(GetPawn());
+
+	AMonsterBase* Monster = GetPawn<AMonsterBase>();
 	ACharacterBase* CB = Cast<ACharacterBase>(Blackboard->GetValueAsObject(TEXT("Target")));
-	if (IsValid(CB))
-		CB->SetPDEnable(GetPawn());
+	if (!IsValid(Monster) || !IsValid(CB))
+		return;
+	UAbilitySystemComponent* MonsterASC = Monster->GetAbilitySystemComponent();
+	UAbilitySystemComponent* CharacterASC = CB->GetAbilitySystemComponent();
+	if (!IsValid(MonsterASC) || !IsValid(CharacterASC))
+		return;
+	TSubclassOf<UGameplayEffect> GE_PDEnable = LoadClass<UGameplayEffect>(GetWorld(), TEXT("/Script/Engine.Blueprint'/Game/GAS/GameplayEffect/Monster/GE_PDEnable.GE_PDEnable_C'"));
+	if (!IsValid(GE_PDEnable))
+		return;
+	FGameplayEffectContextHandle Context = MonsterASC->MakeEffectContext();
+	FGameplayEffectSpecHandle Spec = MonsterASC->MakeOutgoingSpec(GE_PDEnable, 1, Context);
+	MonsterASC->ApplyGameplayEffectSpecToTarget(*(Spec.Data.Get()), CharacterASC);
 }
 
 void AMonsterController::TargetUpdate(AActor* Actor, FAIStimulus Stimulus)
