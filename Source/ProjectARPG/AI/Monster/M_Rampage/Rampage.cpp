@@ -48,9 +48,6 @@ void ARampage::RealAttack()
 			TObjectPtr<UAbilitySystemComponent> ASC = Character->GetAbilitySystemComponent();
 			if (IsValid(ASC))
 			{
-				if (ASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.NoDamage"))))
-					return;
-
 				FGameplayEffectContextHandle Context = mASC->MakeEffectContext();
 				FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mGE_MonsterDamage, 1, Context);
 				mASC->ApplyGameplayEffectSpecToTarget(*(Spec.Data.Get()), ASC);

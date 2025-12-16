@@ -80,9 +80,7 @@ void AMonsterController::SetPD()
 	TSubclassOf<UGameplayEffect> GE_PDEnable = LoadClass<UGameplayEffect>(GetWorld(), TEXT("/Script/Engine.Blueprint'/Game/GAS/GameplayEffect/Monster/GE_PDEnable.GE_PDEnable_C'"));
 	if (!IsValid(GE_PDEnable))
 		return;
-	FGameplayEffectContextHandle Context = MonsterASC->MakeEffectContext();
-	FGameplayEffectSpecHandle Spec = MonsterASC->MakeOutgoingSpec(GE_PDEnable, 1, Context);
-	MonsterASC->ApplyGameplayEffectSpecToTarget(*(Spec.Data.Get()), CharacterASC);
+	MonsterASC->ApplyGameplayEffectToTarget(GE_PDEnable->GetDefaultObject<UGameplayEffect>(), CharacterASC);
 }
 
 void AMonsterController::TargetUpdate(AActor* Actor, FAIStimulus Stimulus)

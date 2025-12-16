@@ -73,6 +73,7 @@ void ATerra::ShortAttack()
 	else
 	{
 		mMoveEnable = false;
+		mPDEnable = GetAbilitySystemComponent()->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.PDEnable")));
 		if (!mPDEnable)
 			AIB->PlayShortSkill(0);
 		else

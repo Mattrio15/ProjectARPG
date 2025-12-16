@@ -44,9 +44,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UItemComponent> mItemComponent;
-
-	TSubclassOf<UGameplayAbility> mGA_Dodge;
 	
+	TSubclassOf<UGameplayAbility> mGA_Dodge;
 
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const;
@@ -64,6 +63,8 @@ public:
 	void PlayGE_Attack(FName Name, UAbilitySystemComponent* ASC);
 	void PlayGE_CounterAttack(FName Name, UAbilitySystemComponent* ASC);
 	void PlayGE_Skill(FName Name, UAbilitySystemComponent* ASC);
+
+	void PlayGA_Dodge();
 
 	void ShowUI(bool A);
 	void ShowInventory(bool A);

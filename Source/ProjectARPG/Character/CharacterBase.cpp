@@ -248,6 +248,8 @@ void ACharacterBase::CharacterMoveStart(const FInputActionInstance& Instance)
 		AIB->SetMovingDodge(true);
 		AIB->SetStopMoveDodge(true);
 	}
+
+	GetAbilitySystemComponent()->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.Moving")));
 }
 
 void ACharacterBase::CharacterMove(const FInputActionInstance& Instance)
@@ -283,6 +285,7 @@ void ACharacterBase::CharacterMoveOff(const FInputActionInstance& Instance)
 		AIB->SetStopMoveDodge(false);
 	}
 
+	GetAbilitySystemComponent()->RemoveLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.Moving")));
 }
 
 void ACharacterBase::CharacterCameraRotation(const FInputActionInstance& Instance)
@@ -325,6 +328,7 @@ void ACharacterBase::CharacterChange(const FInputActionInstance& Instance)
 			if (IsValid(CS))
 				CS->SaveCharacterInfo();
 
+			mPDEnable = GetAbilitySystemComponent()->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.PDEnable")));
 			if (mPDEnable)
 			{
 				CC->SetCounterEnable(true);
@@ -363,20 +367,23 @@ void ACharacterBase::CharacterDodge(const FInputActionInstance& Instance)
 	mDodge = true;
 	mSkillEnable = false;
 
+	GetPlayerState<ACharacterState>()->PlayGA_Dodge();
+
+
 	UAnimInstanceBase* AIB = Cast<UAnimInstanceBase>(GetMesh()->GetAnimInstance());
 	if (!IsValid(AIB))
 		return;
 
-	if (mMoving)
-	{
-		mDodgeDir = mDodgeDirVector;
-		AIB->SetDirYaw(mDodgeDir.Rotation().Yaw);
-	}
-	else
-	{
-		mDodgeDir = mDirScene->GetForwardVector() * (-1);
-		AIB->SetDirYaw(mDirScene->GetForwardVector().Rotation().Yaw);
-	}
+	// if (mMoving)
+	// {
+	// 	mDodgeDir = mDodgeDirVector;
+	// 	AIB->SetDirYaw(mDodgeDir.Rotation().Yaw);
+	// }
+	// else
+	// {
+	// 	mDodgeDir = mDirScene->GetForwardVector() * (-1);
+	// 	AIB->SetDirYaw(mDirScene->GetForwardVector().Rotation().Yaw);
+	// }
 	AIB->StopAttackMontage();
 	AIB->StopAllMontages(0.1);
 	AIB->SetDodge(true);
@@ -387,9 +394,7 @@ void ACharacterBase::CharacterDodge(const FInputActionInstance& Instance)
 
 	if (mPDEnable)
 	{
-		// UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-		if (IsValid(ASC))
-			ASC->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.NoDamage")));
+		ASC->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.NoDamage")));
 
 		AIB->SetAttackEnable(true);
 

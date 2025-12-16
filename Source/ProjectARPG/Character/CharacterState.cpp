@@ -40,6 +40,11 @@ ACharacterState::ACharacterState()
 
 	mItemComponent = CreateDefaultSubobject<UItemComponent>(TEXT("ItemComponent"));
 
+	static ConstructorHelpers::FClassFinder<UGameplayAbility>
+		GA_Dodge(TEXT("/Script/Engine.Blueprint'/Game/GAS/GameplayAbility/Character/GA_Dodge.GA_Dodge_C'"));
+	if (GA_Dodge.Succeeded())
+		mGA_Dodge = GA_Dodge.Class;
+
 }
 
 UAbilitySystemComponent* ACharacterState::GetAbilitySystemComponent() const
@@ -140,6 +145,9 @@ void ACharacterState::InitAbilitySystemComponent(AActor* Avatar)
 			}
 		}
 	}
+
+	FGameplayAbilitySpec DodgeSpec = FGameplayAbilitySpec(mGA_Dodge);
+	mASC->GiveAbility(mGA_Dodge);
 
 	TSubclassOf<UGameplayEffect> HPRegen = LoadClass<UGameplayEffect>(GetWorld(), TEXT("/Script/Engine.Blueprint'/Game/GAS/GameplayEffect/Character/GE_HealthRegen.GE_HealthRegen_C'"));
 	if (IsValid(HPRegen))
@@ -244,6 +252,11 @@ void ACharacterState::PlayGE_Skill(FName Name, UAbilitySystemComponent* ASC)
 		if (!ASC->HasMatchingGameplayTag(mCharacterGE->mGE_Elemental_Tag[Name]))
 			SetElemental(ASC, mCharacterGE->mGE_Elemental_Tag[Name]);
 
+}
+
+void ACharacterState::PlayGA_Dodge()
+{
+	mASC->TryActivateAbilityByClass(mGA_Dodge);
 }
 
 void ACharacterState::ShowUI(bool A)

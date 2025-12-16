@@ -13,5 +13,9 @@ UCLASS()
 class PROJECTARPG_API UGA_Dodge : public UGameplayAbility
 {
 	GENERATED_BODY()
+
+protected:
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, 
+		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData);
 	
 };
