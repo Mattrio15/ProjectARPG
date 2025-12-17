@@ -105,7 +105,7 @@ void ACharacterBase::Tick(float DeltaTime)
 			mForwardTimer = 0;
 		}
 	}
-
+	/*
 	if (mDodge)
 	{
 		mDodgeTimer += DeltaTime;
@@ -162,6 +162,7 @@ void ACharacterBase::Tick(float DeltaTime)
 			mDodgePostProcess->Settings.VignetteIntensity = 0;
 		}
 	}
+	*/
 
 	if (!mPDEnable)
 	{
@@ -363,13 +364,13 @@ void ACharacterBase::CharacterDodge(const FInputActionInstance& Instance)
 	if (mDodge)
 		return;
 
-	mMoveEnable = false;
+	// mMoveEnable = false;
 	mDodge = true;
 	mSkillEnable = false;
 
 	GetPlayerState<ACharacterState>()->PlayGA_Dodge();
 
-
+	/*
 	UAnimInstanceBase* AIB = Cast<UAnimInstanceBase>(GetMesh()->GetAnimInstance());
 	if (!IsValid(AIB))
 		return;
@@ -411,6 +412,7 @@ void ACharacterBase::CharacterDodge(const FInputActionInstance& Instance)
 		if (IsValid(SB))
 			UGameplayStatics::PlaySound2D(GetWorld(), SB);
 	}
+	*/
 }
 
 void ACharacterBase::CharacterAttack(const FInputActionInstance& Instance)

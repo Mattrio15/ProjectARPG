@@ -149,6 +149,8 @@ public:
 	FVector GetDirVector() { return mDirVector; }
 	float GetDirYaw() { return mDirScene->GetRelativeRotation().Yaw; }
 	FName GetCharacterName() { return mName; }
+	UPostProcessComponent* GetDPP() { return mDodgePostProcess; }
+	UNiagaraComponent* GetDAI() { return mDodgeAfterImage; }
 
 public:
 	void CounterChange();
