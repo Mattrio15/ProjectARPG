@@ -39,7 +39,7 @@ void UAnimInstanceBase::NativeUpdateAnimation(float DeltaSeconds)
 			if (Vel == 0)
 			{
 				mIsKnockback = false;
-				mAttackEnable = true;
+				// mAttackEnable = true;
 				Character->SetMoveEnable(true);
 				Character->SetAttackEnable(true);
 				Character->SetSkillEnable(true);
@@ -76,14 +76,12 @@ void UAnimInstanceBase::PlayShortAttack()
 	if (!IsValid(mAttackMontage))
 		return;
 
-	if (!mAttackEnable)
-		return;
-
 	ACharacterBase* Character = Cast<ACharacterBase>(TryGetPawnOwner());
 	if (!IsValid(Character))
 		return;
 
 	Character->SetMoveEnable(false);
+	Character->SetAttackEnable(false);
 
 	mDirVector = Character->GetDirVector();
 	if (mDirVector.Length() > 0)
@@ -91,7 +89,6 @@ void UAnimInstanceBase::PlayShortAttack()
 
 	mMoving = true;
 	mForward = 0;
-	mAttackEnable = false;
 
 	Montage_Play(mAttackMontage);
 	Montage_JumpToSection(mAttackMontage->GetSectionName(mAttackIndex%(mAttackMontage->GetNumSections())));
@@ -101,19 +98,20 @@ void UAnimInstanceBase::PlayShortAttack()
 
 void UAnimInstanceBase::PlayLongAttack()
 {
-	if (!IsValid(mAttackMontage) || !mAttackEnable)
+	if (!IsValid(mAttackMontage))
 		return;
-
-	mAttackEnable = false;
 
 	ACharacterBase* Character = Cast<ACharacterBase>(TryGetPawnOwner());
 	if (!IsValid(Character))
 		return;
 	Character->SetMoveEnable(false);
-	if (Character->GetDirVector().Length() > 0)
-		SetDirYaw(Character->GetDirVector().Rotation().Yaw);
-	else
-		SetDirYaw(Character->GetDirYaw());
+	Character->SetAttackEnable(false);
+
+	// if (Character->GetDirVector().Length() > 0)
+	// 	SetDirYaw(Character->GetDirVector().Rotation().Yaw);
+	// else
+	// 	SetDirYaw(Character->GetDirYaw());
+	SetDirYaw(Character->GetDirYaw());
 
 	Montage_Play(mAttackMontage);
 	Montage_JumpToSection(mAttackMontage->GetSectionName(mAttackIndex%(mAttackMontage->GetNumSections())));
@@ -132,17 +130,6 @@ void UAnimInstanceBase::PlayDodgeAndCounterAttack(int32 Index)
 	ACharacterBase* Character = Cast<ACharacterBase>(TryGetPawnOwner());
 	if (!IsValid(Character))
 		return;
-
-	mAttackEnable = false;
-
-	if (Index == 0)
-	{
-		if (Character->GetDirVector().Length() == 0)
-			SetDirYaw(Character->GetDirYaw());
-		else
-			SetDirYaw(Character->GetDirVector().Rotation().Yaw);
-		
-	}
 
 	Montage_Play(mCounterMontage);
 	Montage_JumpToSection(mCounterMontage->GetSectionName(Index));
@@ -166,7 +153,7 @@ void UAnimInstanceBase::PlayShortSkill(int32 Index)
 	Montage_JumpToSection(mSkillMontage->GetSectionName(Index));
 
 	mSkillEnable = false;
-	mAttackEnable = false;
+	// mAttackEnable = false;
 }
 
 void UAnimInstanceBase::PlayLongSkill(int32 Index)
@@ -192,7 +179,6 @@ void UAnimInstanceBase::PlayUltimate(int32 Index)
 	Montage_JumpToSection(mUltimateMontage->GetSectionName(Index));
 
 	mSkillEnable = false;
-	mAttackEnable = false;
 }
 
 void UAnimInstanceBase::StopAttackMontage()
@@ -207,7 +193,9 @@ void UAnimInstanceBase::StopAttackMontage()
 
 void UAnimInstanceBase::AnimNotify_Combo()
 {
-	mAttackEnable = true;
+	ACharacterBase* Character = Cast<ACharacterBase>(GetOwningActor());
+	if (IsValid(Character))
+		Character->SetAttackEnable(true);
 	mCombo = true;
 }
 
@@ -223,7 +211,7 @@ void UAnimInstanceBase::AnimNotify_SkillEnd()
 		Character->SetSkillEnable(true);
 	}
 	StopAllMontages(0.25);
-	mAttackEnable = true;
+	// mAttackEnable = true;
 }
 
 void UAnimInstanceBase::AnimNotify_Effect_Attack()
@@ -261,7 +249,7 @@ void UAnimInstanceBase::AnimNotify_DodgeAttackEnd()
 	if (IsValid(Character))
 	{
 		Character->SetMoveEnable(true);
-		mAttackEnable = true;
+		// mAttackEnable = true;
 	}
 }
 
@@ -307,10 +295,11 @@ void UAnimInstanceBase::OnMotageEnd(UAnimMontage* Montage, bool bInterrupted)
 		if (IsValid(Character))
 		{
 			Character->SetMoveEnable(true);
+			Character->SetAttackEnable(true);
 			Character->SetSkillEnable(true);
 		}
 
-		mAttackEnable = true;
+		// mAttackEnable = true;
 		mSkillEnable = true;
 		if(mCombo)
 			mAttackIndex = 0;

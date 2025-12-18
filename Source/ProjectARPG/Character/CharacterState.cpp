@@ -254,9 +254,9 @@ void ACharacterState::PlayGE_Skill(FName Name, UAbilitySystemComponent* ASC)
 
 }
 
-void ACharacterState::PlayGA_Dodge()
+bool ACharacterState::PlayGA_Dodge()
 {
-	mASC->TryActivateAbilityByClass(mGA_Dodge);
+	return mASC->TryActivateAbilityByClass(mGA_Dodge);
 }
 
 void ACharacterState::ShowUI(bool A)
@@ -271,7 +271,7 @@ void ACharacterState::ShowInventory(bool A)
 		if (A)
 			mInventory->SetVisibility(ESlateVisibility::Visible);
 		else
-			mInventory->SetVisibility(ESlateVisibility::Hidden);
+			mInventory->SetVisibility(ESlateVisibility::HitTestInvisible);
 	}
 }
 

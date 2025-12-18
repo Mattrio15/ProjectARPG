@@ -105,64 +105,6 @@ void ACharacterBase::Tick(float DeltaTime)
 			mForwardTimer = 0;
 		}
 	}
-	/*
-	if (mDodge)
-	{
-		mDodgeTimer += DeltaTime;
-		if (mDodgeTimer < 0.3)
-		{
-			float DodgeLen = 7.5;
-			if (mPDEnable)
-			{
-				if (mDodgePostProcess->Settings.VignetteIntensity < 1)
-				{
-					mDodgePostProcess->Settings.SceneFringeIntensity += DeltaTime * 50;
-					mDodgePostProcess->Settings.VignetteIntensity += DeltaTime * 10;
-				}
-				DodgeLen *= 2;
-			}
-			if (mMoving)
-			{
-				// AddMovementInput(mDodgeDir, 1);
-				SetActorLocation(GetActorLocation() + mDodgeDir * DodgeLen);
-			}
-			else
-				SetActorLocation(GetActorLocation() + mDodgeDir * DodgeLen);
-		}
-		else
-		{
-			mMoveEnable = true;
-			mDodge = false;
-			mDodgeTimer = 0;
-			mPDEnable = false;
-
-			mSkillEnable = true;
-
-			UAnimInstanceBase* AIB = Cast<UAnimInstanceBase>(GetMesh()->GetAnimInstance());
-			if (IsValid(AIB))
-			{
-				AIB->SetDodge(false);
-				AIB->SetAttackEnable(true);
-			}
-		}
-	}
-	if (mDPPEnable)
-	{
-		if (mDodgePostProcess->Settings.VignetteIntensity > 0)
-		{
-			mDodgePostProcess->Settings.SceneFringeIntensity -= DeltaTime * 75;
-			mDodgePostProcess->Settings.VignetteIntensity -= DeltaTime * 15;
-		}
-		else
-		{
-			mDPPEnable = false;
-			mDodgePostProcess->Settings.bOverride_SceneFringeIntensity = false;
-			mDodgePostProcess->Settings.bOverride_VignetteIntensity = false;
-			mDodgePostProcess->Settings.SceneFringeIntensity = 0;
-			mDodgePostProcess->Settings.VignetteIntensity = 0;
-		}
-	}
-	*/
 
 	if (!mPDEnable)
 	{
@@ -358,61 +300,11 @@ void ACharacterBase::CharacterDodge(const FInputActionInstance& Instance)
 	if (mShowUI)
 		return;
 
-	if (!mDodgeEnable)
-		return;
-
-	if (mDodge)
-		return;
-
-	// mMoveEnable = false;
-	mDodge = true;
-	mSkillEnable = false;
-
-	GetPlayerState<ACharacterState>()->PlayGA_Dodge();
-
-	/*
-	UAnimInstanceBase* AIB = Cast<UAnimInstanceBase>(GetMesh()->GetAnimInstance());
-	if (!IsValid(AIB))
-		return;
-
-	// if (mMoving)
-	// {
-	// 	mDodgeDir = mDodgeDirVector;
-	// 	AIB->SetDirYaw(mDodgeDir.Rotation().Yaw);
-	// }
-	// else
-	// {
-	// 	mDodgeDir = mDirScene->GetForwardVector() * (-1);
-	// 	AIB->SetDirYaw(mDirScene->GetForwardVector().Rotation().Yaw);
-	// }
-	AIB->StopAttackMontage();
-	AIB->StopAllMontages(0.1);
-	AIB->SetDodge(true);
-
-	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-	FGameplayTagContainer Tag = ASC->GetOwnedGameplayTags();
-	mPDEnable = ASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.PDEnable")));
-
-	if (mPDEnable)
+	if (GetPlayerState<ACharacterState>()->PlayGA_Dodge())
 	{
-		ASC->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.NoDamage")));
-
-		AIB->SetAttackEnable(true);
-
-		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.25);
-		GetWorld()->GetTimerManager().SetTimer(mDilationTimer, this, &ACharacterBase::FinishDilation, 0.25);
-		mDodgeDir *= 0.3;
-
-		mDodgeAfterImage->Activate(false);
-
-		mDodgePostProcess->Settings.bOverride_SceneFringeIntensity = true;
-		mDodgePostProcess->Settings.bOverride_VignetteIntensity = true;
-
-		USoundBase* SB = LoadObject<USoundBase>(GetWorld(), TEXT("/Script/Engine.SoundWave'/Game/Sound/SW_PerfectDodge.SW_PerfectDodge'"));
-		if (IsValid(SB))
-			UGameplayStatics::PlaySound2D(GetWorld(), SB);
+		mAttackEnable = false;
+		mSkillEnable = false;
 	}
-	*/
 }
 
 void ACharacterBase::CharacterAttack(const FInputActionInstance& Instance)
@@ -422,15 +314,7 @@ void ACharacterBase::CharacterAttack(const FInputActionInstance& Instance)
 
 	if (!mAttackEnable)
 		return;
-	/*
-	if (mDodge)
-	{
-		DodgeAttack();
-		mSkillEnable = true;
-	}
-	else
-		ShortAttack();
-	*/
+
 	ShortAttack();
 	MoveAttack();
 }

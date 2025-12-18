@@ -64,7 +64,7 @@ public:
 	void PlayGE_CounterAttack(FName Name, UAbilitySystemComponent* ASC);
 	void PlayGE_Skill(FName Name, UAbilitySystemComponent* ASC);
 
-	void PlayGA_Dodge();
+	bool PlayGA_Dodge();
 
 	void ShowUI(bool A);
 	void ShowInventory(bool A);

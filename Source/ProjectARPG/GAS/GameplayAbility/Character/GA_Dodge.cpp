@@ -49,7 +49,7 @@ void UGA_Dodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 
 	UAbilityTask_ApplyRootMotionConstantForce* AT_CF = UAbilityTask_ApplyRootMotionConstantForce::ApplyRootMotionConstantForce(
 		this, TEXT("Dodge"), DirVec, 1000, 0.3, true, nullptr, ERootMotionFinishVelocityMode::SetVelocity, FVector(0, 0, 0), 0, true);
-
+	
 	AT_CF->OnFinish.AddDynamic(this, &UGA_Dodge::FinishDodge);
 	AT_CF->ReadyForActivation();
 
@@ -81,6 +81,18 @@ void UGA_Dodge::FinishDodge()
 {
 	CurrentActorInfo->AbilitySystemComponent->RemoveLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.NoDamage")));
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
+
+	UAnimInstanceBase* AIB = Cast<UAnimInstanceBase>(CurrentActorInfo->GetAnimInstance());
+	if (IsValid(AIB))
+		AIB->SetDodge(false);
+
+	ACharacterBase* Character = Cast<ACharacterBase>(CurrentActorInfo->AvatarActor);
+	if (IsValid(Character))
+	{
+		Character->SetMoveEnable(true);
+		Character->SetAttackEnable(true);
+		Character->SetSkillEnable(true);
+	}
 
 	if (IsValid(mDPP))
 	{
