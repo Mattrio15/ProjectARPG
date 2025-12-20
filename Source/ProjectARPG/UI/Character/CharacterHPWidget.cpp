@@ -72,3 +72,9 @@ void UCharacterHPWidget::SetItemCount(int32 Index, int32 Count)
 {
 	mQuickSlotWidget->SetItemCount(Index, Count);
 }
+
+void UCharacterHPWidget::PlayQuickSlotAnimation(int32 Index)
+{
+	if (IsValid(mQuickSlotWidget))
+		mQuickSlotWidget->PlayQuickSlotAnimation(Index);
+}

@@ -30,11 +30,17 @@ protected:
 	virtual FReply NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent);
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent);
 
+
 public:
 	void SetHPBar(float A);
 	void SetMPBar(float A);
 
 	void SetDragWidget(UItemDataAsset* Item, bool A);
 	void SetItemCount(int32 Index, int32 Count);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayButtonAnimation(int32 Index);
+
+	void PlayQuickSlotAnimation(int32 Index);
 
 };

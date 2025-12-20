@@ -71,4 +71,7 @@ public:
 	void SetItem(UItemDataAsset* Item) { mItem = Item; }
 	void SetItemCount(int32 Index, int32 Count);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayQuickSlotAnimation(int32 Index);
+
 };

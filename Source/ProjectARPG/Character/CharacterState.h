@@ -70,6 +70,9 @@ public:
 	void ShowInventory(bool A);
 	UCharacterHPWidget* GetMainWidget() { return mHPWidget; }
 
+	void PlayButtonAnimation(int32 Index);
+	void PlayQuickSlotAnimation(int32 Index);
+
 public:
 	FName GetCharacterName() { return mCharacterName; }
 	void SetCharacterName(FName Name) { mCharacterName = Name; }

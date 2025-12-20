@@ -269,7 +269,10 @@ void ACharacterBase::CharacterChange(const FInputActionInstance& Instance)
 
 			ACharacterState* CS = GetPlayerState<ACharacterState>();
 			if (IsValid(CS))
+			{
 				CS->SaveCharacterInfo();
+				CS->PlayButtonAnimation(3);
+			}
 
 			mPDEnable = GetAbilitySystemComponent()->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.PDEnable")));
 			if (mPDEnable)
@@ -298,7 +301,11 @@ void ACharacterBase::CharacterChange(const FInputActionInstance& Instance)
 void ACharacterBase::CharacterDodge(const FInputActionInstance& Instance)
 {
 	if (mShowUI)
+
 		return;
+	ACharacterState* CS = GetPlayerState<ACharacterState>();
+	if (IsValid(CS))
+		CS->PlayButtonAnimation(1);
 
 	if (GetPlayerState<ACharacterState>()->PlayGA_Dodge())
 	{
@@ -312,11 +319,16 @@ void ACharacterBase::CharacterAttack(const FInputActionInstance& Instance)
 	if (mShowUI)
 		return;
 
+	ACharacterState* CS = GetPlayerState<ACharacterState>();
+	if (IsValid(CS))
+		CS->PlayButtonAnimation(0);
+
 	if (!mAttackEnable)
 		return;
 
 	ShortAttack();
 	MoveAttack();
+
 }
 
 void ACharacterBase::CharacterAttackTriggered(const FInputActionInstance& Instance)
@@ -338,6 +350,10 @@ void ACharacterBase::CharacterSkill(const FInputActionInstance& Instance)
 {
 	if (mShowUI)
 		return;
+
+	ACharacterState* CS = GetPlayerState<ACharacterState>();
+	if (IsValid(CS))
+		CS->PlayButtonAnimation(2);
 
 	if (!mSkillEnable)
 		return;
@@ -396,6 +412,8 @@ void ACharacterBase::CharacterQuickSlot_1(const FInputActionInstance& Instance)
 		UItemComponent* IC = CS->GetItemComponent();
 		if (IsValid(IC))
 			IC->UseQuickSlotItem(0);
+
+		CS->PlayQuickSlotAnimation(0);
 	}
 }
 
@@ -407,6 +425,8 @@ void ACharacterBase::CharacterQuickSlot_2(const FInputActionInstance& Instance)
 		UItemComponent* IC = CS->GetItemComponent();
 		if (IsValid(IC))
 			IC->UseQuickSlotItem(1);
+
+		CS->PlayQuickSlotAnimation(1);
 	}
 }
 
@@ -418,6 +438,8 @@ void ACharacterBase::CharacterQuickSlot_3(const FInputActionInstance& Instance)
 		UItemComponent* IC = CS->GetItemComponent();
 		if (IsValid(IC))
 			IC->UseQuickSlotItem(2);
+
+		CS->PlayQuickSlotAnimation(2);
 	}
 }
 

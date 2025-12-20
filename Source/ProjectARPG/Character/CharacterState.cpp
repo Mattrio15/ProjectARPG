@@ -275,6 +275,18 @@ void ACharacterState::ShowInventory(bool A)
 	}
 }
 
+void ACharacterState::PlayButtonAnimation(int32 Index)
+{
+	if (IsValid(mHPWidget))
+		mHPWidget->PlayButtonAnimation(Index);
+}
+
+void ACharacterState::PlayQuickSlotAnimation(int32 Index)
+{
+	if (IsValid(mHPWidget))
+		mHPWidget->PlayQuickSlotAnimation(Index);
+}
+
 void ACharacterState::GetItem(UItemDataAsset* Item)
 {
 	mItemComponent->AddItem(Item);
