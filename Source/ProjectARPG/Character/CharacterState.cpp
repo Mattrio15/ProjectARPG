@@ -155,7 +155,8 @@ void ACharacterState::InitAbilitySystemComponent(AActor* Avatar)
 		FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(HPRegen, 1, Context);
 		mASC->ApplyGameplayEffectSpecToSelf(*(Spec.Data.Get()));
 	}
-	
+
+	SetCharacterFace();
 }
 
 void ACharacterState::SaveCharacterInfo()
@@ -190,6 +191,8 @@ void ACharacterState::SaveCharacterInfo()
 
 	SaveInfo.CharacterInfo.Add(mADA->mUltimateRateTag);
 	SaveInfo.CharacterInfo[mADA->mUltimateRateTag] = CAS->GetUltimateRate();
+
+	SaveInfo.CharacterFace = mCharacterInfo[mCharacterName].CharacterFace;
 
 	mCharacterInfo[mCharacterName] = SaveInfo;
 
@@ -290,4 +293,11 @@ void ACharacterState::PlayQuickSlotAnimation(int32 Index)
 void ACharacterState::GetItem(UItemDataAsset* Item)
 {
 	mItemComponent->AddItem(Item);
+}
+
+void ACharacterState::SetCharacterFace()
+{
+	if (IsValid(mHPWidget))
+		mHPWidget->SetCharacterFace(mCharacterInfo[mCharacterName].CharacterFace);
+
 }

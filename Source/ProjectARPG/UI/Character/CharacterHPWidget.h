@@ -24,8 +24,11 @@ protected:
 	UQuickSlotWidget* mQuickSlotWidget;
 	UItemDataAsset* mDragItem;
 
+	UImage* mImage_CharacterFace;
+
 protected:
 	virtual void NativeOnInitialized();
+	virtual void NativeConstruct();
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime);
 	virtual FReply NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent);
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent);
@@ -42,5 +45,7 @@ public:
 	void PlayButtonAnimation(int32 Index);
 
 	void PlayQuickSlotAnimation(int32 Index);
+
+	void SetCharacterFace(UTexture2D* Face);
 
 };

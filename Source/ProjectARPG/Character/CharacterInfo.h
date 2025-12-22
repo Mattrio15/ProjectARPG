@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -14,5 +14,8 @@ struct FCharacterInfo :public FTableRowBase
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<FGameplayTag, float> CharacterInfo;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* CharacterFace;
 
 };

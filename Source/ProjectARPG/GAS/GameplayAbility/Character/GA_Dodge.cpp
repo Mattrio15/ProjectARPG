@@ -33,9 +33,7 @@ void UGA_Dodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 
 	bool Moving = ActorInfo->AbilitySystemComponent->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.Moving")));
 	if (Moving)
-	{
 		AIB->SetDirYaw(DirVec.Rotation().Yaw);
-	}
 	else
 	{
 		AIB->SetDirYaw(Character->GetDirYaw());
@@ -53,10 +51,10 @@ void UGA_Dodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 	AT_CF->OnFinish.AddDynamic(this, &UGA_Dodge::FinishDodge);
 	AT_CF->ReadyForActivation();
 
-	ActorInfo->AbilitySystemComponent->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.NoDamage")));
 
 	if (ActorInfo->AbilitySystemComponent->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.PDEnable"))))
 	{
+		ActorInfo->AbilitySystemComponent->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.NoDamage")));
 		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.25);
 		mDPP = Character->GetDPP();
 		if (IsValid(mDPP))

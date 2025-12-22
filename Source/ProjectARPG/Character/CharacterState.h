@@ -82,4 +82,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void GetItem(UItemDataAsset* Item);
 
+	void SetCharacterFace();
+
 };

@@ -3,6 +3,7 @@
 
 #include "CharacterHPWidget.h"
 #include "Components/CanvasPanelSlot.h"
+#include "../../Character/CharacterState.h"
 
 void UCharacterHPWidget::NativeOnInitialized()
 {
@@ -13,6 +14,18 @@ void UCharacterHPWidget::NativeOnInitialized()
 
 	mDragWidget = Cast<UDragWidget>(GetWidgetFromName(TEXT("WB_Drag")));
 	mQuickSlotWidget = Cast<UQuickSlotWidget>(GetWidgetFromName(TEXT("WB_QuickSlot")));
+
+	mImage_CharacterFace = Cast<UImage>(GetWidgetFromName(TEXT("Image_CharacterFace")));
+
+}
+
+void UCharacterHPWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	ACharacterState* CS = GetOwningPlayerState<ACharacterState>();
+	if (IsValid(CS))
+		CS->SetCharacterFace();
 
 }
 
@@ -77,4 +90,13 @@ void UCharacterHPWidget::PlayQuickSlotAnimation(int32 Index)
 {
 	if (IsValid(mQuickSlotWidget))
 		mQuickSlotWidget->PlayQuickSlotAnimation(Index);
+}
+
+void UCharacterHPWidget::SetCharacterFace(UTexture2D* Face)
+{
+	if (!IsValid(mImage_CharacterFace) || !IsValid(Face))
+		return;
+
+	mImage_CharacterFace->SetBrushFromTexture(Face, true);
+
 }

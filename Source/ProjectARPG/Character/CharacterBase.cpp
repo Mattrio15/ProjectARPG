@@ -192,7 +192,12 @@ void ACharacterBase::CharacterMoveStart(const FInputActionInstance& Instance)
 		AIB->SetStopMoveDodge(true);
 	}
 
-	GetAbilitySystemComponent()->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.Moving")));
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (IsValid(ASC))
+	{
+		if(!ASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.Moving"))))
+			ASC->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.Moving")));
+	}
 }
 
 void ACharacterBase::CharacterMove(const FInputActionInstance& Instance)
@@ -228,7 +233,12 @@ void ACharacterBase::CharacterMoveOff(const FInputActionInstance& Instance)
 		AIB->SetStopMoveDodge(false);
 	}
 
-	GetAbilitySystemComponent()->RemoveLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.Moving")));
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (IsValid(ASC))
+	{
+		if (ASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.Moving"))))
+			ASC->RemoveLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.Moving")));
+	}
 }
 
 void ACharacterBase::CharacterCameraRotation(const FInputActionInstance& Instance)
@@ -460,7 +470,7 @@ void ACharacterBase::FinishDilation()
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
 	mDPPEnable = true;
 	mMoveEnable = true;
-
+	
 }
 
 void ACharacterBase::DodgeAttack()
