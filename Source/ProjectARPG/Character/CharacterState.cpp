@@ -75,6 +75,8 @@ void ACharacterState::BeginPlay()
 				mItemComponent->SetInventory(mInventory);
 				mItemComponent->SetMainWidget(mHPWidget);
 			}
+
+			SetCharacterFace();
 		}
 	}
 

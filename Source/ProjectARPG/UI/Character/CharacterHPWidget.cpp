@@ -19,22 +19,6 @@ void UCharacterHPWidget::NativeOnInitialized()
 
 }
 
-void UCharacterHPWidget::NativeConstruct()
-{
-	Super::NativeConstruct();
-
-	ACharacterState* CS = GetOwningPlayerState<ACharacterState>();
-	if (IsValid(CS))
-		CS->SetCharacterFace();
-
-}
-
-void UCharacterHPWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-
-}
-
 FReply UCharacterHPWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = Super::NativeOnMouseMove(InGeometry, InMouseEvent);
