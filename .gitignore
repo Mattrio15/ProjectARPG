@@ -1,70 +1,31 @@
-# Unreal Engine
-
-# Files to ignore (build products, user settings, etc.)
-
-# ***********************
-# Unreal Engine specific
-# ***********************
-
-# Cache and build files
-Intermediate/
+# --- Unreal Engine 기본 제외 항목 ---
+Binaries/
 DerivedDataCache/
+Intermediate/
+Saved/
 .vs/
 .vscode/
-Binaries/
-Build/
-Saved/
-Plugins/Nvidia/
-Plugins/Wwise/
-
-# Visual Studio and IDE files
-*.VC.db
-*.opensdf
-*.sdf
-*.suo
+*.sln
+*.vcxproj
+*.filters
 *.user
-*.sln.docstates
-*.v12.suo
-*.v14.suo
-*.tmp
+*.db
+*.opendb
 
-# Logs and crash reports
-*.log
+# --- 에셋 파일 제외 (LFS 용량 문제 해결) ---
+# Content 폴더 내의 무거운 파일들을 제외합니다.
+Content/
 
-# Mac/Linux specific
-.DS_Store
+# --- 필수 설정 파일 (반드시 포함해야 함) ---
+# 위에서 Content를 지웠으므로, 설정 파일들은 제외되지 않도록 유지합니다.
+!Config/
+Config/Template/
 
-# ***********************
-# User specific
-# ***********************
+# --- 소스 코드 (반드시 포함) ---
+!Source/
 
-# User-specific settings that change frequently
-Config/DefaultEngine.ini
-Config/DefaultGame.ini
-Config/DefaultInput.ini
-
-# ***********************
-# Source Control specific
-# ***********************
-
-# Files managed by Git LFS (pointers only)
-!*.uasset
-!*.umap
-
-# Ignore the .gitattributes file itself, unless specifically needed
-.gitattributes
-
-# Ignore the generated project files if you only manage Source/
-# If you manage the full project structure, comment these out:
-# *.sln
-# *.vcxproj
-# *.vcxproj.filters
-# *.vcxproj.user
-
-# ***********************
-# Misc
-# ***********************
-
-# Windows executable files
+# --- 기타 ---
 *.exe
 *.dll
+*.log
+.DS_Store
