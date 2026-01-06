@@ -65,4 +65,9 @@ UInputData::UInputData()
 	if (QuickSlot3.Succeeded())
 		mQuickSlot_3 = QuickSlot3.Object;
 
+	static ConstructorHelpers::FObjectFinder<UInputAction>
+		Pause(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_Pause.IA_Pause'"));
+	if (Pause.Succeeded())
+		mPause = Pause.Object;
+
 }

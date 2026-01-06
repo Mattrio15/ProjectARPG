@@ -32,6 +32,7 @@ public:
 	UInputAction* mQuickSlot_1;
 	UInputAction* mQuickSlot_2;
 	UInputAction* mQuickSlot_3;
+	UInputAction* mPause;
 
 
 };

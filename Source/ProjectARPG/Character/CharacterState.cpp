@@ -33,10 +33,10 @@ ACharacterState::ACharacterState()
 	if (AbilityDataAsset.Succeeded())
 		mAbilityDataAsset = AbilityDataAsset.Object;
 
-	static ConstructorHelpers::FClassFinder<UCharacterHPWidget>
-		HPWidget(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/Character/WB_CharacterHP.WB_CharacterHP_C'"));
-	if (HPWidget.Succeeded())
-		mHPWidgetClass = HPWidget.Class;
+	static ConstructorHelpers::FClassFinder<UUserWidget>
+		MainWidget(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/Character/WB_MainWidget.WB_MainWidget_C'"));
+	if (MainWidget.Succeeded())
+		mMainWidgetClass = MainWidget.Class;
 
 	mItemComponent = CreateDefaultSubobject<UItemComponent>(TEXT("ItemComponent"));
 
@@ -56,12 +56,17 @@ void ACharacterState::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (IsValid(mHPWidgetClass))
+	if (IsValid(mMainWidgetClass))
 	{
-		mHPWidget = CreateWidget<UCharacterHPWidget>(GetWorld(), mHPWidgetClass);
+		mMainWidget = CreateWidget<UUserWidget>(GetWorld(), mMainWidgetClass);
+		if (IsValid(mMainWidget))
+		{
+			mHPWidget = Cast<UCharacterHPWidget>(mMainWidget->GetWidgetFromName(TEXT("WB_CharacterHP")));
+			mPauseWidget = Cast<UUserWidget>(mMainWidget->GetWidgetFromName(TEXT("WB_CharacterPause")));
+		}
 		if (IsValid(mHPWidget))
 		{
-			mHPWidget->AddToViewport();
+			mMainWidget->AddToViewport();
 
 			mCAS->OnHealthChanged.AddUObject(mHPWidget, &UCharacterHPWidget::SetHPBar);
 			mCAS->OnManaChanged.AddUObject(mHPWidget, &UCharacterHPWidget::SetMPBar);
@@ -278,6 +283,24 @@ void ACharacterState::ShowInventory(bool A)
 		else
 			mInventory->SetVisibility(ESlateVisibility::HitTestInvisible);
 	}
+}
+
+void ACharacterState::ShowPause()
+{
+	if (!IsValid(mPauseWidget))
+	{
+		Log(TEXT("PauseWidget Is Invalid!"));
+		return;
+	}
+
+	mPauseWidget->SetVisibility(ESlateVisibility::Visible);
+
+	UGameplayStatics::SetGamePaused(GetWorld(), true);
+
+	FInputModeUIOnly Mode;
+	GetPlayerController()->SetInputMode(Mode);
+	GetPlayerController()->bShowMouseCursor = true;
+
 }
 
 void ACharacterState::PlayButtonAnimation(int32 Index)

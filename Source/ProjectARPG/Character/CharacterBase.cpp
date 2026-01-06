@@ -162,6 +162,7 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Input->BindAction(ID->mQuickSlot_1, ETriggerEvent::Started, this, &ACharacterBase::CharacterQuickSlot_1);
 	Input->BindAction(ID->mQuickSlot_2, ETriggerEvent::Started, this, &ACharacterBase::CharacterQuickSlot_2);
 	Input->BindAction(ID->mQuickSlot_3, ETriggerEvent::Started, this, &ACharacterBase::CharacterQuickSlot_3);
+	Input->BindAction(ID->mPause, ETriggerEvent::Started, this, &ACharacterBase::CharacterPause);
 
 }
 
@@ -451,6 +452,13 @@ void ACharacterBase::CharacterQuickSlot_3(const FInputActionInstance& Instance)
 
 		CS->PlayQuickSlotAnimation(2);
 	}
+}
+
+void ACharacterBase::CharacterPause(const FInputActionInstance& Instance)
+{
+	ACharacterState* CS = GetPlayerState<ACharacterState>();
+	if (IsValid(CS))
+		CS->ShowPause();
 }
 
 void ACharacterBase::CharacterDisappear()

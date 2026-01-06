@@ -1,8 +1,8 @@
 #include "Game_Info.h"
 
-void Test(FString T)
+void Test(FString T, float Second, FColor Color)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, T);
+	GEngine->AddOnScreenDebugMessage(-1, Second, Color, T);
 }
 
 void Log(FString T)

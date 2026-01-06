@@ -104,6 +104,7 @@ protected:
 	void CharacterQuickSlot_1(const FInputActionInstance& Instance);
 	void CharacterQuickSlot_2(const FInputActionInstance& Instance);
 	void CharacterQuickSlot_3(const FInputActionInstance& Instance);
+	void CharacterPause(const FInputActionInstance& Instance);
 
 
 

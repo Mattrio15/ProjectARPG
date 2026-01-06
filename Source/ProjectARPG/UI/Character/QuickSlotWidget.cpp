@@ -80,7 +80,7 @@ void UQuickSlotWidget::SetSlot(int32 Index)
 			if (IsValid(IC))
 				IC->SetQuickSlot(mItem, Index);		// 아이템 컴포넌트에 몇 번째 칸에 아이템이 있다고 알려줌
 
-			UCharacterHPWidget* MainWidget = CS->GetMainWidget();
+			UCharacterHPWidget* MainWidget = CS->GetHPWidget();
 			if (IsValid(MainWidget))
 				MainWidget->SetDragWidget(nullptr, false);			// 드래그 위젯은 이제 불필요
 		}

@@ -38,9 +38,11 @@ protected:
 	UDA_CharacterGE* mCharacterGE;
 	UAbilityDataAsset* mAbilityDataAsset;
 
-	TSubclassOf<UCharacterHPWidget> mHPWidgetClass;
+	TSubclassOf<UUserWidget> mMainWidgetClass;
 	UCharacterHPWidget* mHPWidget;
 	UCharacterInventory* mInventory;
+	UUserWidget* mMainWidget;
+	UUserWidget* mPauseWidget;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UItemComponent> mItemComponent;
@@ -68,7 +70,8 @@ public:
 
 	void ShowUI(bool A);
 	void ShowInventory(bool A);
-	UCharacterHPWidget* GetMainWidget() { return mHPWidget; }
+	void ShowPause();
+	UCharacterHPWidget* GetHPWidget() { return mHPWidget; }
 
 	void PlayButtonAnimation(int32 Index);
 	void PlayQuickSlotAnimation(int32 Index);

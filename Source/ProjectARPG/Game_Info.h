@@ -17,6 +17,6 @@
 
 #include "Components/WidgetComponent.h"
 
-void Test(FString T);
+void Test(FString T, float Second = 10, FColor Color = FColor::Red);
 
 void Log(FString T);

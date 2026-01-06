@@ -84,7 +84,7 @@ void UEntry_Inventory::ItemSelect()
 	ACharacterState* CS = GetOwningPlayer()->GetPlayerState<ACharacterState>();
 	if (CS)
 	{
-		UCharacterHPWidget* MainWidget = CS->GetMainWidget(); // 메인 위젯
+		UCharacterHPWidget* MainWidget = CS->GetHPWidget(); // 메인 위젯
 		UItemDataAsset* Item = GetListItem<UItemDataAsset>(); // 아이템 데이터 애셋
 		if (IsValid(MainWidget) && IsValid(Item))
 		{
