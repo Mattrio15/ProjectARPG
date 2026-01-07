@@ -152,6 +152,7 @@ public:
 	FName GetCharacterName() { return mName; }
 	UPostProcessComponent* GetDPP() { return mDodgePostProcess; }
 	UNiagaraComponent* GetDAI() { return mDodgeAfterImage; }
+	FRotator GetCameraRotation() { return mArm->GetRelativeRotation(); }
 
 public:
 	void CounterChange();

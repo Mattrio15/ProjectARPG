@@ -4,6 +4,7 @@
 #include "CharacterState.h"
 #include "CharacterBase.h"
 #include "../AI/Monster/MonsterBase.h"
+#include "../SaveGame/MySaveGame.h"
 
 ACharacterState::ACharacterState()
 {
@@ -325,4 +326,22 @@ void ACharacterState::SetCharacterFace()
 	if (IsValid(mHPWidget))
 		mHPWidget->SetCharacterFace(mCharacterInfo[mCharacterName].CharacterFace);
 
+}
+
+FSaveGameData ACharacterState::GetSaveGameData()
+{
+	FSaveGameData Data;
+
+	ACharacterBase* Character = GetPawn<ACharacterBase>();
+	
+	if (IsValid(Character))
+	{
+		Data.LevelName = TEXT("TestLevel");
+		Data.CharacterName = mCharacterName;
+		Data.CharacterLocation = Character->GetActorLocation();
+		Data.CharacterRotation = Character->GetActorRotation();
+		Data.CameraRotation = Character->GetCameraRotation();
+	}
+
+	return Data;
 }

@@ -14,9 +14,8 @@
 #include "GameFramework/PlayerState.h"
 #include "CharacterState.generated.h"
 
-/**
- * 
- */
+struct FSaveGameData;
+
 UCLASS()
 class PROJECTARPG_API ACharacterState : public APlayerState, public IAbilitySystemInterface
 {
@@ -86,5 +85,9 @@ public:
 	void GetItem(UItemDataAsset* Item);
 
 	void SetCharacterFace();
+
+public:
+	FSaveGameData GetSaveGameData();
+
 
 };
