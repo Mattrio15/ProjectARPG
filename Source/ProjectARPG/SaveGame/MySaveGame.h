@@ -27,6 +27,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	FRotator CameraRotation;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	float DirYaw;
+
 };
 
 UCLASS()

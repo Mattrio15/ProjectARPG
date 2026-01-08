@@ -3,7 +3,6 @@
 
 #include "MyGameInstance.h"
 #include "Character/CharacterState.h"
-#include "SaveGame/MySaveGame.h"
 
 UMyGameInstance::UMyGameInstance()
 {
@@ -14,18 +13,21 @@ void UMyGameInstance::Init()
 	Super::Init();
 
 	mHasSave = UGameplayStatics::DoesSaveGameExist(TEXT("MySave"), 0);
-}
 
-void UMyGameInstance::ChangeLevel(TSoftObjectPtr<UWorld> Level)
-{
 	if (mHasSave)
 	{
-		LoadGame();
+		UMySaveGame* SaveObject = Cast<UMySaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("MySave"), 0));
+		if (IsValid(SaveObject))
+			mSaveData = SaveObject->GetSaveGameData();
 	}
-	else
-	{
+}
 
-	}
+void UMyGameInstance::ChangeLevel(TSoftObjectPtr<UWorld> Level, bool IsNewGame)
+{
+	FInputModeGameOnly Mode;
+	GetFirstLocalPlayerController(GetWorld())->SetInputMode(Mode);
+
+	mIsNewGame = IsNewGame;
 
 	UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), Level);
 }
@@ -41,6 +43,8 @@ void UMyGameInstance::SaveGame()
 
 	UMySaveGame* SaveObject = Cast<UMySaveGame>(UGameplayStatics::CreateSaveGameObject(UMySaveGame::StaticClass()));
 	SaveObject->SetSaveGameData(CS->GetSaveGameData());
+
+	mSaveData = SaveObject->GetSaveGameData();
 
 	FAsyncSaveGameToSlotDelegate SaveDelegate;
 	SaveDelegate.BindUObject(this, &UMyGameInstance::OnAsyncSaveFinished);

@@ -4,10 +4,12 @@
 
 #include "Game_Info.h"
 #include "Engine/GameInstance.h"
+#include "SaveGame/MySaveGame.h"
 #include "MyGameInstance.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSaveFinished, bool, bSuccess);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoadFinished, bool, bSuccess);
+
 
 UCLASS()
 class PROJECTARPG_API UMyGameInstance : public UGameInstance
@@ -20,6 +22,9 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool mHasSave = false;
+	bool mIsNewGame = true;
+
+	FSaveGameData mSaveData;
 
 public:
 	virtual void Init();
@@ -27,10 +32,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void SetHasSave(bool A) { mHasSave = A; }
-
-	UFUNCTION(BlueprintCallable)
-	void ChangeLevel(TSoftObjectPtr<UWorld> Level);
+	void ChangeLevel(TSoftObjectPtr<UWorld> Level, bool IsNewGame);
 
 	UPROPERTY(BlueprintAssignable)
 	FOnSaveFinished OnSaveFinished;
@@ -41,6 +43,10 @@ public:
 	void SaveGame();
 	UFUNCTION(BlueprintCallable)
 	void LoadGame();
+
+	bool GetIsNewGame() { return mIsNewGame; }
+	bool GetHasSave() { return mHasSave; }
+	const FSaveGameData& GetSaveGameData() { return mSaveData; }
 
 protected:
 	void OnAsyncSaveFinished(const FString& SlotName, int32 UserIndex, bool bSuccess);

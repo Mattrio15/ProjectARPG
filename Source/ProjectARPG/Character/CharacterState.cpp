@@ -341,6 +341,7 @@ FSaveGameData ACharacterState::GetSaveGameData()
 		Data.CharacterLocation = Character->GetActorLocation();
 		Data.CharacterRotation = Character->GetActorRotation();
 		Data.CameraRotation = Character->GetCameraRotation();
+		Data.DirYaw = Character->GetDirYaw();
 	}
 
 	return Data;

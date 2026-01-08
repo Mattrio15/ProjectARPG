@@ -9,6 +9,8 @@
 #include "C_Revenant/Revenant.h"
 #include "C_Terra/Terra.h"
 #include "C_TwinBlast/TwinBlast.h"
+#include "../MyGameInstance.h"
+#include "../SaveGame/MySaveGame.h"
 
 
 ACharacterController::ACharacterController()
@@ -20,6 +22,19 @@ void ACharacterController::BeginPlay()
 	Super::BeginPlay();
 
 	mCounterCamera = GetWorld()->SpawnActor<ACounterCamera>(ACounterCamera::StaticClass(), FVector(0, 0, 0), FRotator::ZeroRotator);
+	
+	ACharacterBase* CB = GetPawn<ACharacterBase>();
+	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
+	if (!IsValid(CB) || !IsValid(GI))
+		return;
+	if (!GI->GetIsNewGame())
+	{
+		FSaveGameData SD = GI->GetSaveGameData();
+		CB->SetActorLocation(SD.CharacterLocation);
+		CB->SetActorRotation(SD.CharacterRotation);
+		CB->SetCameraRotation(SD.CameraRotation);
+		CB->SetDirYaw(SD.DirYaw);
+	}
 }
 
 void ACharacterController::OnPossess(APawn* aPawn)
