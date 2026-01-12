@@ -89,5 +89,7 @@ public:
 public:
 	FSaveGameData GetSaveGameData();
 
+	void SetSaveGameData(FSaveGameData Data);
+
 
 };

@@ -7,6 +7,17 @@
 #include "MySaveGame.generated.h"
 
 USTRUCT(BlueprintType)
+struct FCharacterStateInfo
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TMap<FGameplayTag, float> CharacterState;
+
+};
+
+USTRUCT(BlueprintType)
 struct FSaveGameData
 {
 	GENERATED_BODY()
@@ -30,6 +41,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	float DirYaw;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TMap<FName, FCharacterStateInfo> CharacterInfo;
 };
 
 UCLASS()

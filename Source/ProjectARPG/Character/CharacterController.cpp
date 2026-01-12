@@ -22,19 +22,9 @@ void ACharacterController::BeginPlay()
 	Super::BeginPlay();
 
 	mCounterCamera = GetWorld()->SpawnActor<ACounterCamera>(ACounterCamera::StaticClass(), FVector(0, 0, 0), FRotator::ZeroRotator);
-	
-	ACharacterBase* CB = GetPawn<ACharacterBase>();
-	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
-	if (!IsValid(CB) || !IsValid(GI))
-		return;
-	if (!GI->GetIsNewGame())
-	{
-		FSaveGameData SD = GI->GetSaveGameData();
-		CB->SetActorLocation(SD.CharacterLocation);
-		CB->SetActorRotation(SD.CharacterRotation);
-		CB->SetCameraRotation(SD.CameraRotation);
-		CB->SetDirYaw(SD.DirYaw);
-	}
+
+	GetWorld()->GetTimerManager().SetTimer(mSpawnTimer, this, &ACharacterController::SpawnCharacter, 0.1, false);
+
 }
 
 void ACharacterController::OnPossess(APawn* aPawn)
@@ -45,6 +35,59 @@ void ACharacterController::OnPossess(APawn* aPawn)
 void ACharacterController::OnUnPossess()
 {
 	Super::OnUnPossess();
+}
+
+void ACharacterController::SpawnCharacter()
+{
+	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
+	if (!IsValid(GI))
+		return;
+	if (GI->GetIsNewGame())
+		return;
+
+	ACharacterState* CS = GetPlayerState<ACharacterState>();
+	if (IsValid(CS))
+		CS->SetSaveGameData(GI->GetSaveGameData());
+
+	GetPawn()->Destroy();
+
+	ACharacterBase* CB = nullptr;
+	FSaveGameData SD = GI->GetSaveGameData();
+	if (SD.CharacterName == TEXT("Kallari"))
+	{
+		CB = GetWorld()->SpawnActor<AKallari>(AKallari::StaticClass(), FVector(0, 0, -10000), FRotator::ZeroRotator);
+		mCharacterIndex = 1;
+	}
+	else if (SD.CharacterName == TEXT("Muriel"))
+	{
+		CB = GetWorld()->SpawnActor<AMuriel>(AMuriel::StaticClass(), FVector(0, 0, -10000), FRotator::ZeroRotator);
+		mCharacterIndex = 2;
+	}
+	else if (SD.CharacterName == TEXT("Revenant"))
+	{
+		CB = GetWorld()->SpawnActor<ARevenant>(ARevenant::StaticClass(), FVector(0, 0, -10000), FRotator::ZeroRotator);
+		mCharacterIndex = 3;
+	}
+	else if (SD.CharacterName == TEXT("Terra"))
+	{
+		CB = GetWorld()->SpawnActor<ATerra>(ATerra::StaticClass(), FVector(0, 0, -10000), FRotator::ZeroRotator);
+		mCharacterIndex = 4;
+	}
+	else if (SD.CharacterName == TEXT("TwinBlast"))
+	{
+		CB = GetWorld()->SpawnActor<ATwinBlast>(ATwinBlast::StaticClass(), FVector(0, 0, -10000), FRotator::ZeroRotator);
+		mCharacterIndex = 5;
+	}
+	else
+		CB = GetWorld()->SpawnActor<AAurora>(AAurora::StaticClass(), FVector(0, 0, -10000), FRotator::ZeroRotator);
+	
+	CB->SetActorLocation(SD.CharacterLocation);
+	CB->SetActorRotation(SD.CharacterRotation);
+	CB->SetCameraRotation(SD.CameraRotation);
+	CB->SetDirYaw(SD.DirYaw);
+
+	OnPossess(CB);
+
 }
 
 void ACharacterController::CharacterChange(FVector Postion, FRotator CameraRotation, float DirYaw)

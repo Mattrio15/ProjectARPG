@@ -113,20 +113,21 @@ void ACharacterState::InitAbilitySystemComponent(AActor* Avatar)
 	}
 	mASC->InitAbilityActorInfo(this, Avatar);
 
-	if (!mCharacterInfo.Contains(mCharacterName))
-	{
-		if (!IsValid(mCharacterInfoTable))
-		{
-			Log(TEXT("CharacterInfoTable Is Invalid"));
-			return;
-		}
-		FCharacterInfo* Info = mCharacterInfoTable->FindRow<FCharacterInfo>(mCharacterName, TEXT(""));
-		mCharacterInfo.Add(mCharacterName, *Info);
-	}
+	FCharacterInfo* InfoPtr = mCharacterInfoTable->FindRow<FCharacterInfo>(mCharacterName, TEXT(""));
+	if (!InfoPtr)
+		return;
 
+	if (!mCharacterInfo.Contains(mCharacterName))
+		mCharacterInfo.Add(mCharacterName, *InfoPtr);
+	
+	mCharacterInfo[mCharacterName].CharacterFace = InfoPtr->CharacterFace;
 	FCharacterInfo Info = mCharacterInfo[mCharacterName];
 
-	GetPawn<ACharacterBase>()->GetCharacterMovement()->MaxWalkSpeed = Info.CharacterInfo[mADA->mMoveSpeedTag];
+	ACharacterBase* CB = Cast<ACharacterBase>(Avatar);
+	if (Info.CharacterInfo.Contains(mADA->mMoveSpeedTag))
+		CB->GetCharacterMovement()->MaxWalkSpeed = Info.CharacterInfo[mADA->mMoveSpeedTag];
+	else
+		Test(TEXT("Empty!"));
 
 	FGameplayEffectContextHandle Context = mASC->MakeEffectContext();
 	if (IsValid(mCharacterGE->mGE_Init))
@@ -342,7 +343,29 @@ FSaveGameData ACharacterState::GetSaveGameData()
 		Data.CharacterRotation = Character->GetActorRotation();
 		Data.CameraRotation = Character->GetCameraRotation();
 		Data.DirYaw = Character->GetDirYaw();
+
+		for (auto& Map : mCharacterInfo)
+		{
+			FCharacterStateInfo CSI;
+			CSI.CharacterState = Map.Value.CharacterInfo;
+			Data.CharacterInfo.Add(Map.Key, CSI);
+		}
 	}
 
 	return Data;
+}
+
+void ACharacterState::SetSaveGameData(FSaveGameData Data)
+{
+	for (auto& Map : Data.CharacterInfo)
+	{
+		if(mCharacterInfo.Contains(Map.Key))
+			mCharacterInfo[Map.Key].CharacterInfo = Map.Value.CharacterState;
+		else
+		{
+			FCharacterInfo Info;
+			Info.CharacterInfo = Map.Value.CharacterState;
+			mCharacterInfo.Add(Map.Key, Info);
+		}
+	}
 }

@@ -7,9 +7,8 @@
 #include "GameFramework/PlayerController.h"
 #include "CharacterController.generated.h"
 
-/**
- * 
- */
+class ACharacterBase;
+
 UCLASS()
 class PROJECTARPG_API ACharacterController : public APlayerController
 {
@@ -24,6 +23,7 @@ protected:
 
 	ACounterCamera* mCounterCamera;
 
+	FTimerHandle mSpawnTimer;
 
 protected:
 	virtual void BeginPlay() override;
@@ -31,6 +31,8 @@ protected:
 protected:
 	virtual void OnPossess(APawn* aPawn) override;
 	virtual void OnUnPossess() override;
+
+	void SpawnCharacter();
 
 public:
 	void CharacterChange(FVector Postion, FRotator CameraRotation, float DirYaw);

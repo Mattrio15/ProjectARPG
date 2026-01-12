@@ -66,7 +66,8 @@ void UMyGameInstance::OnAsyncSaveFinished(const FString& SlotName, int32 UserInd
 {
 	mHasSave = bSuccess;
 
-	OnSaveFinished.Broadcast(bSuccess);
+	if(OnSaveFinished.IsBound())
+		OnSaveFinished.Broadcast(bSuccess);
 
 }
 
