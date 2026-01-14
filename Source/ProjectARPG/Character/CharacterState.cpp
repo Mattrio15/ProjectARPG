@@ -271,6 +271,14 @@ bool ACharacterState::PlayGA_Dodge()
 	return mASC->TryActivateAbilityByClass(mGA_Dodge);
 }
 
+void ACharacterState::ShowMainWidget(bool A)
+{
+	if (A)
+		mMainWidget->SetVisibility(ESlateVisibility::Visible);
+	else
+		mMainWidget->SetVisibility(ESlateVisibility::Hidden);
+}
+
 void ACharacterState::ShowUI(bool A)
 {
 	ShowInventory(A);

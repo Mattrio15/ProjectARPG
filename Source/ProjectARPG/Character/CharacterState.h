@@ -67,6 +67,8 @@ public:
 
 	bool PlayGA_Dodge();
 
+	UFUNCTION(BlueprintCallable)
+	void ShowMainWidget(bool A);
 	void ShowUI(bool A);
 	void ShowInventory(bool A);
 	void ShowPause();
