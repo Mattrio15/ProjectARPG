@@ -16,6 +16,7 @@ void UCharacterHPWidget::NativeOnInitialized()
 	mQuickSlotWidget = Cast<UQuickSlotWidget>(GetWidgetFromName(TEXT("WB_QuickSlot")));
 
 	mImage_CharacterFace = Cast<UImage>(GetWidgetFromName(TEXT("Image_CharacterFace")));
+	mImage_FKey = Cast<UImage>(GetWidgetFromName(TEXT("Image_FKey")));
 
 }
 
@@ -82,5 +83,17 @@ void UCharacterHPWidget::SetCharacterFace(UTexture2D* Face)
 		return;
 
 	mImage_CharacterFace->SetBrushFromTexture(Face, true);
+
+}
+
+void UCharacterHPWidget::ShowFKey(bool A)
+{
+	if (!IsValid(mImage_FKey))
+		return;
+
+	if (A)
+		mImage_FKey->SetVisibility(ESlateVisibility::HitTestInvisible);
+	else
+		mImage_FKey->SetVisibility(ESlateVisibility::Hidden);
 
 }

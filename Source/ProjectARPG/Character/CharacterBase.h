@@ -69,6 +69,7 @@ protected:
 	FName mName;
 
 	bool mShowUI = false;
+	bool mNPCTalking = false;
 
 public:
 	virtual void SetGenericTeamId(const FGenericTeamId& TeamID) {}
@@ -105,6 +106,7 @@ protected:
 	void CharacterQuickSlot_2(const FInputActionInstance& Instance);
 	void CharacterQuickSlot_3(const FInputActionInstance& Instance);
 	void CharacterPause(const FInputActionInstance& Instance);
+	void CharacterFKey(const FInputActionInstance& Instance);
 
 
 
@@ -146,6 +148,7 @@ public:
 	void SetPDEnable(AActor* Target);
 
 	void ShowUI(bool A);
+	void SetNPCTalking(bool A);
 
 	FVector GetDirVector() { return mDirVector; }
 	float GetDirYaw() { return mDirScene->GetRelativeRotation().Yaw; }

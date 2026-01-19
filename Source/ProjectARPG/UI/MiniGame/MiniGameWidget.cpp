@@ -3,12 +3,14 @@
 
 #include "MiniGameWidget.h"
 #include "Algo/RandomShuffle.h"
+#include "../../Character/CharacterState.h"
 
 void UMiniGameWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	mRestart = Cast<UButton>(GetWidgetFromName(TEXT("Button_ReStart")));
+	mButtonReset = Cast<UButton>(GetWidgetFromName(TEXT("Button_Reset")));
+	mButtonClose = Cast<UButton>(GetWidgetFromName(TEXT("Button_Close")));
 
 	mCard00 = Cast<UCardWidget>(GetWidgetFromName(TEXT("WB_Card_00")));
 	mCard01 = Cast<UCardWidget>(GetWidgetFromName(TEXT("WB_Card_01")));
@@ -40,8 +42,57 @@ void UMiniGameWidget::NativeOnInitialized()
 
 void UMiniGameWidget::NativeConstruct()
 {
-	mRestart->OnClicked.AddDynamic(this, &UMiniGameWidget::ButtonRestartClick);
+	if(IsValid(mButtonReset))
+		mButtonReset->OnClicked.AddDynamic(this, &UMiniGameWidget::ButtonRestartClick);
+	if (IsValid(mButtonClose))
+		mButtonClose->OnClicked.AddDynamic(this, &UMiniGameWidget::ButtonCloseClick);
 
+	ShuffleCard();
+
+}
+
+void UMiniGameWidget::ButtonRestartClick()
+{
+	for (int32 i = 0; i < 12; ++i)
+	{
+		if (!IsValid(mCardArray[i]))
+			continue;
+
+		if (mCardArray[i]->GetCardTurn())
+		{
+			mCardArray[i]->PlayCardAnimation();
+			mCardArray[i]->SetCardTurn(false);
+		}
+	
+	}
+
+	SetCardEnable(false);
+
+	if (IsValid(mFirstCard))
+		mFirstCard = nullptr;
+}
+
+void UMiniGameWidget::ButtonCloseClick()
+{
+	APlayerController* PC = GetOwningPlayer();
+	if (!IsValid(PC))
+		return;
+
+	FInputModeGameOnly Mode;
+	PC->SetInputMode(Mode);
+	
+	ACharacterState* CS = PC->GetPlayerState<ACharacterState>();
+	if (!IsValid(CS))
+		return;
+
+	CS->ShowMainWidget(true);
+	UGameplayStatics::SetGamePaused(GetWorld(), false);
+
+	SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UMiniGameWidget::ShuffleCard()
+{
 	TArray<int32> Index;
 	for (int32 i = 0; i < 6; ++i)
 	{
@@ -62,14 +113,19 @@ void UMiniGameWidget::NativeConstruct()
 
 }
 
-void UMiniGameWidget::ButtonRestartClick()
+void UMiniGameWidget::SetCardEnable(bool A)
 {
 	for (int32 i = 0; i < 12; ++i)
 	{
-		if (mCardArray[i]->GetCardTurn())
-			mCardArray[i]->PlayCardAnimation();
+		if (IsValid(mCardArray[i]))
+			mCardArray[i]->SetIsEnabled(A);
 	}
+}
 
+void UMiniGameWidget::SetFirstCard(UCardWidget* Card)
+{
+	mFirstCard = Card;
+	Card->SetCardTurn(true);
 }
 
 void UMiniGameWidget::SetSecondCard(UCardWidget* Card)

@@ -15,6 +15,7 @@
 #include "CharacterState.generated.h"
 
 struct FSaveGameData;
+class UMiniGameWidget;
 
 UCLASS()
 class PROJECTARPG_API ACharacterState : public APlayerState, public IAbilitySystemInterface
@@ -48,6 +49,8 @@ protected:
 	
 	TSubclassOf<UGameplayAbility> mGA_Dodge;
 
+	UMiniGameWidget* mMiniGameWidget;
+
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const;
 
@@ -72,12 +75,15 @@ public:
 	void ShowUI(bool A);
 	void ShowInventory(bool A);
 	void ShowPause();
-	UCharacterHPWidget* GetHPWidget() { return mHPWidget; }
+	void ShowFKey(bool A);
 
 	void PlayButtonAnimation(int32 Index);
 	void PlayQuickSlotAnimation(int32 Index);
 
+	void PlayMiniGame();
+
 public:
+	UCharacterHPWidget* GetHPWidget() { return mHPWidget; }
 	FName GetCharacterName() { return mCharacterName; }
 	void SetCharacterName(FName Name) { mCharacterName = Name; }
 

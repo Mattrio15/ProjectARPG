@@ -15,7 +15,8 @@ class PROJECTARPG_API UMiniGameWidget : public UUserWidget
 	GENERATED_BODY()
 
 protected:
-	UButton* mRestart;
+	UButton* mButtonReset;
+	UButton* mButtonClose;
 
 	UCardWidget* mCard00;
 	UCardWidget* mCard01;
@@ -41,13 +42,22 @@ protected:
 
 	UFUNCTION()
 	void ButtonRestartClick();
+	UFUNCTION()
+	void ButtonCloseClick();
+
+	UFUNCTION(BlueprintCallable)
+	void ShuffleCard();
+
+	UFUNCTION(BlueprintCallable)
+	void SetCardEnable(bool A);
 
 public:
 	UCardWidget* GetFirstCard() { return mFirstCard; }
 	UCardWidget* GetSecondCard() { return mSecondCard; }
 
-	void SetFirstCard(UCardWidget* Card) { mFirstCard = Card; }
+	void SetFirstCard(UCardWidget* Card);
 	void SetSecondCard(UCardWidget* Card);
+
 
 
 };

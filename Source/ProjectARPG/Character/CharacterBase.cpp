@@ -163,6 +163,7 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Input->BindAction(ID->mQuickSlot_2, ETriggerEvent::Started, this, &ACharacterBase::CharacterQuickSlot_2);
 	Input->BindAction(ID->mQuickSlot_3, ETriggerEvent::Started, this, &ACharacterBase::CharacterQuickSlot_3);
 	Input->BindAction(ID->mPause, ETriggerEvent::Started, this, &ACharacterBase::CharacterPause);
+	Input->BindAction(ID->mFKey, ETriggerEvent::Started, this, &ACharacterBase::CharacterFKey);
 
 }
 
@@ -461,6 +462,17 @@ void ACharacterBase::CharacterPause(const FInputActionInstance& Instance)
 		CS->ShowPause();
 }
 
+void ACharacterBase::CharacterFKey(const FInputActionInstance& Instance)
+{
+	if (mNPCTalking)
+	{
+		ACharacterState* CS = GetPlayerState<ACharacterState>();
+		if (IsValid(CS))
+			CS->PlayMiniGame();
+	}
+
+}
+
 void ACharacterBase::CharacterDisappear()
 {
 	Destroy();
@@ -537,6 +549,17 @@ void ACharacterBase::ShowUI(bool A)
 		AC->bShowMouseCursor = false;
 		CS->ShowUI(A);
 	}
+}
+
+void ACharacterBase::SetNPCTalking(bool A)
+{
+	mNPCTalking = A;
+
+	ACharacterState* CS = GetPlayerState<ACharacterState>();
+	if (!IsValid(CS))
+		return;
+
+	CS->ShowFKey(A);
 }
 
 void ACharacterBase::CounterChange()

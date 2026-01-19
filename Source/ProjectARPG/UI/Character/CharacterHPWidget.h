@@ -25,6 +25,7 @@ protected:
 	UItemDataAsset* mDragItem;
 
 	UImage* mImage_CharacterFace;
+	UImage* mImage_FKey;
 
 protected:
 	virtual void NativeOnInitialized();
@@ -45,5 +46,7 @@ public:
 	void PlayQuickSlotAnimation(int32 Index);
 
 	void SetCharacterFace(UTexture2D* Face);
+
+	void ShowFKey(bool A);
 
 };

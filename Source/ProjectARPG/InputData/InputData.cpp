@@ -70,4 +70,9 @@ UInputData::UInputData()
 	if (Pause.Succeeded())
 		mPause = Pause.Object;
 
+	static ConstructorHelpers::FObjectFinder<UInputAction>
+		FKey(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_FKey.IA_FKey'"));
+	if (FKey.Succeeded())
+		mFKey = FKey.Object;
+
 }

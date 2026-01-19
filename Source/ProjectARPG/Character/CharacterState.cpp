@@ -5,6 +5,7 @@
 #include "CharacterBase.h"
 #include "../AI/Monster/MonsterBase.h"
 #include "../SaveGame/MySaveGame.h"
+#include "../UI/MiniGame/MiniGameWidget.h"
 
 ACharacterState::ACharacterState()
 {
@@ -313,6 +314,14 @@ void ACharacterState::ShowPause()
 
 }
 
+void ACharacterState::ShowFKey(bool A)
+{
+	if (!IsValid(mHPWidget))
+		return;
+
+	mHPWidget->ShowFKey(A);
+}
+
 void ACharacterState::PlayButtonAnimation(int32 Index)
 {
 	if (IsValid(mHPWidget))
@@ -323,6 +332,32 @@ void ACharacterState::PlayQuickSlotAnimation(int32 Index)
 {
 	if (IsValid(mHPWidget))
 		mHPWidget->PlayQuickSlotAnimation(Index);
+}
+
+void ACharacterState::PlayMiniGame()
+{
+	ShowMainWidget(false);
+
+	APlayerController* PC = GetPlayerController();
+	if (IsValid(PC))
+	{
+		FInputModeUIOnly Mode;
+		PC->SetInputMode(Mode);
+		PC->bShowMouseCursor = true;
+		UGameplayStatics::SetGamePaused(GetWorld(), true);
+
+		if (!IsValid(mMiniGameWidget))
+		{
+			TSubclassOf<UMiniGameWidget> MGWClass = LoadClass<UMiniGameWidget>(GetWorld(), TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/MiniGame/WB_MiniGame.WB_MiniGame_C'"));
+			if (IsValid(MGWClass))
+			{
+				mMiniGameWidget = CreateWidget<UMiniGameWidget>(GetWorld(), MGWClass);
+			}
+		}
+		mMiniGameWidget->AddToViewport();
+		mMiniGameWidget->SetVisibility(ESlateVisibility::Visible);
+	}
+
 }
 
 void ACharacterState::GetItem(UItemDataAsset* Item)
