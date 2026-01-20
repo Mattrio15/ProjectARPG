@@ -80,6 +80,7 @@ void UMiniGameWidget::ButtonCloseClick()
 
 	FInputModeGameOnly Mode;
 	PC->SetInputMode(Mode);
+	PC->bShowMouseCursor = false;
 	
 	ACharacterState* CS = PC->GetPlayerState<ACharacterState>();
 	if (!IsValid(CS))
@@ -111,6 +112,8 @@ void UMiniGameWidget::ShuffleCard()
 			Test(TEXT("Card Is InValid!"));
 	}
 
+	mCorrectCount = 0;
+
 }
 
 void UMiniGameWidget::SetCardEnable(bool A)
@@ -137,6 +140,27 @@ void UMiniGameWidget::SetSecondCard(UCardWidget* Card)
 
 		mFirstCard->SetCardTurn(true);
 		Card->SetCardTurn(true);
+		mCorrectCount += 1;
+
+		if (mCorrectCount >= 6)
+		{
+			ACharacterState* CS = GetOwningPlayer()->GetPlayerState<ACharacterState>();
+			if (IsValid(CS))
+			{
+				UItemDataAsset* HpPotion = LoadObject<UItemDataAsset>(GetWorld(), TEXT("/Script/ProjectARPG.ItemDataAsset'/Game/UI/Item/DA_HealthPotion.DA_HealthPotion'"));
+				UItemDataAsset* MpPotion = LoadObject<UItemDataAsset>(GetWorld(), TEXT("/Script/ProjectARPG.ItemDataAsset'/Game/UI/Item/DA_ManaPotion.DA_ManaPotion'"));
+				if (IsValid(HpPotion) && IsValid(MpPotion))
+				{
+					for (int32 i = 0; i < 3; ++i)
+					{
+						CS->GetItem(HpPotion);
+						CS->GetItem(MpPotion);
+					}
+				}
+			}
+			ClearMiniGame();
+			mCorrectCount = 0;
+		}
 	}
 	else
 	{

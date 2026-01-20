@@ -36,6 +36,8 @@ protected:
 	UCardWidget* mFirstCard;
 	UCardWidget* mSecondCard;
 
+	int32 mCorrectCount = 0;
+
 protected:
 	virtual void NativeOnInitialized();
 	virtual void NativeConstruct();
@@ -51,13 +53,15 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SetCardEnable(bool A);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void ClearMiniGame();
+
+
 public:
 	UCardWidget* GetFirstCard() { return mFirstCard; }
 	UCardWidget* GetSecondCard() { return mSecondCard; }
 
 	void SetFirstCard(UCardWidget* Card);
 	void SetSecondCard(UCardWidget* Card);
-
-
 
 };
