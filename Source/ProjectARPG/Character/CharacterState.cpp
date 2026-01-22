@@ -6,6 +6,9 @@
 #include "../AI/Monster/MonsterBase.h"
 #include "../SaveGame/MySaveGame.h"
 #include "../UI/MiniGame/MiniGameWidget.h"
+#include "../MyGameInstance.h"
+#include "LevelSequence.h"
+#include "LevelSequencePlayer.h"
 
 ACharacterState::ACharacterState()
 {
@@ -87,6 +90,35 @@ void ACharacterState::BeginPlay()
 		}
 	}
 
+	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
+	if (!IsValid(GI))
+		return;
+
+	if (GI->GetIsNewGame())
+	{
+		ULevelSequence* LS = LoadObject<ULevelSequence>(GetWorld(), TEXT("/Script/LevelSequence.LevelSequence'/Game/LevelSequence/LS_Start.LS_Start'"));
+		if (IsValid(LS))
+		{
+			FMovieSceneSequencePlaybackSettings Setting;
+			Setting.bHideHud = true;
+			ALevelSequenceActor* LSA = nullptr;
+			ULevelSequencePlayer* LSP = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), LS, Setting, LSA);
+			if (IsValid(LSP))
+			{
+				ShowMainWidget(false);
+				LSP->Play();
+				FQualifiedFrameTime Duration = LSP->GetDuration();
+				FTimerHandle Timer;
+				GetWorld()->GetTimerManager().SetTimer(Timer, 
+					[this]() 
+					{
+						ShowMainWidget(true); 
+					},
+					Duration.AsSeconds(), false);
+			}
+
+		}
+	}
 }
 
 void ACharacterState::SetElemental(UAbilitySystemComponent* ASC, FGameplayTag Tag)

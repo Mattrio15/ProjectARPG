@@ -11,7 +11,8 @@ public class ProjectARPG : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput",
 		"Niagara", "AIModule", 
 		"GameplayAbilities", "GameplayTags", "GameplayTasks",
-		"UMG", "Slate", "SlateCore"});
+		"UMG", "Slate", "SlateCore",
+        "LevelSequence", "MovieScene"});
 
         PrivateDependencyModuleNames.AddRange(new string[] {  });
 
