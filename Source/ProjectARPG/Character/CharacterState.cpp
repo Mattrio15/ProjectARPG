@@ -3,8 +3,15 @@
 
 #include "CharacterState.h"
 #include "CharacterBase.h"
+#include "ItemComponent.h"
+#include "DA_CharacterGE.h"
+#include "../GAS/AttributeSet/CharacterAttributeSet.h"
+#include "../GAS/AttributeDataAsset.h"
+#include "../GAS/GameplayAbility/AbilityDataAsset.h"
 #include "../AI/Monster/MonsterBase.h"
 #include "../SaveGame/MySaveGame.h"
+#include "../UI/Character/CharacterHPWidget.h"
+#include "../UI/Character/CharacterInventory.h"
 #include "../UI/MiniGame/MiniGameWidget.h"
 #include "../MyGameInstance.h"
 #include "LevelSequence.h"
@@ -105,14 +112,25 @@ void ACharacterState::BeginPlay()
 			ULevelSequencePlayer* LSP = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), LS, Setting, LSA);
 			if (IsValid(LSP))
 			{
+				FInputModeUIOnly Mode;
+				GetPlayerController()->SetInputMode(Mode);
+				
 				ShowMainWidget(false);
 				LSP->Play();
 				FQualifiedFrameTime Duration = LSP->GetDuration();
 				FTimerHandle Timer;
+				TWeakObjectPtr<ACharacterState> WeakThis(this);
 				GetWorld()->GetTimerManager().SetTimer(Timer, 
-					[this]() 
+					[WeakThis]() 
 					{
-						ShowMainWidget(true); 
+						if (WeakThis.IsValid())
+						{
+							WeakThis->ShowMainWidget(true);
+							FInputModeGameOnly Mode;
+							APlayerController* PC = WeakThis->GetPlayerController();
+							if (IsValid(PC))
+								PC->SetInputMode(Mode);
+						}
 					},
 					Duration.AsSeconds(), false);
 			}

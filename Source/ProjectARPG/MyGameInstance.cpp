@@ -55,17 +55,20 @@ void UMyGameInstance::SaveGame()
 
 void UMyGameInstance::LoadGame()
 {
-	FAsyncLoadGameFromSlotDelegate LoadDelegate;
-	LoadDelegate.BindUObject(this, &UMyGameInstance::OnAsyncLoadFinished);
+	if (mHasSave)
+	{
+		FAsyncLoadGameFromSlotDelegate LoadDelegate;
+		LoadDelegate.BindUObject(this, &UMyGameInstance::OnAsyncLoadFinished);
 
-	UGameplayStatics::AsyncLoadGameFromSlot(TEXT("MySave"), 0, LoadDelegate);
+		UGameplayStatics::AsyncLoadGameFromSlot(TEXT("MySave"), 0, LoadDelegate);
+	}
 
 }
 
 void UMyGameInstance::OnAsyncSaveFinished(const FString& SlotName, int32 UserIndex, bool bSuccess)
 {
 	mHasSave = bSuccess;
-
+	
 	if(OnSaveFinished.IsBound())
 		OnSaveFinished.Broadcast(bSuccess);
 
@@ -76,11 +79,7 @@ void UMyGameInstance::OnAsyncLoadFinished(const FString& SlotName, int32 UserInd
 	UMySaveGame* LoadObject = Cast<UMySaveGame>(LoadedGame);
 
 	if (IsValid(LoadObject))
-	{
-		FSaveGameData SGD = LoadObject->GetSaveGameData();
-
 		OnLoadFinished.Broadcast(true);
-	}
 	else
 	{
 		Log(TEXT("Load Failed!"));

@@ -5,6 +5,7 @@
 #include "MonsterAnimInstance.h"
 #include "../../Character/CharacterBase.h"
 #include "../../UI/Monster/MonsterHPWidget.h"
+#include "../../MyGameInstance.h"
 
 UDataTable* AMonsterBase::mMonsterInfoTable = nullptr;
 
@@ -120,12 +121,29 @@ void AMonsterBase::BeginPlay()
 	mMAS->OnMoveSpeedChanged.AddUObject(this, &AMonsterBase::SetMoveSpeed);
 	mMAS->OnElementalOver.AddUObject(this, &AMonsterBase::PlayGE_ElementalOver);
 
+	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
+	if (IsValid(GI))
+	{
+		APlayerController* PC = GI->GetFirstLocalPlayerController();
+		if (IsValid(PC))
+			mPlayer = PC->GetPawn();
+	}
 }
 
 void AMonsterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (IsValid(mPlayer))
+	{
+		FVector PlayerLoc = mPlayer->GetActorLocation();
+		FVector MonsterLoc = GetActorLocation();
+		float Len = (PlayerLoc - MonsterLoc).Length();
+		if (Len > 3000)
+			mMonsterHPWidget->SetVisibility(false);
+		else
+			mMonsterHPWidget->SetVisibility(true);		
+	}
 }
 
 void AMonsterBase::CriticalHit(FVector Dir)

@@ -3,18 +3,20 @@
 #pragma once
 
 #include "../Game_Info.h"
-#include "../GAS/AttributeSet/CharacterAttributeSet.h"
 #include "CharacterInfo.h"
-#include "../GAS/AttributeDataAsset.h"
-#include "../GAS/GameplayAbility/AbilityDataAsset.h"
-#include "DA_CharacterGE.h"
-#include "../UI/Character/CharacterHPWidget.h"
-#include "../UI/Character/CharacterInventory.h"
-#include "ItemComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "CharacterState.generated.h"
 
 struct FSaveGameData;
+class UItemComponent;
+
+class UCharacterAttributeSet;
+class UAttributeDataAsset;
+class UAbilityDataAsset;
+class UDA_CharacterGE;
+
+class UCharacterHPWidget;
+class UCharacterInventory;
 class UMiniGameWidget;
 
 UCLASS()

@@ -54,6 +54,8 @@ protected:
 
 	UElementalDataAsset* mEDA;
 
+	APawn* mPlayer = nullptr;
+
 public:
 	virtual void SetGenericTeamId(const FGenericTeamId& TeamID) {}
 	virtual FGenericTeamId GetGenericTeamId() const { return mTeamId; }

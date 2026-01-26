@@ -37,7 +37,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnSaveFinished OnSaveFinished;
 	UPROPERTY(BlueprintAssignable)
-	FOnSaveFinished OnLoadFinished;
+	FOnLoadFinished OnLoadFinished;
 
 	UFUNCTION(BlueprintCallable)
 	void SaveGame();
