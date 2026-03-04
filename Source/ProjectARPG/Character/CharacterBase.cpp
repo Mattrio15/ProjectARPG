@@ -13,9 +13,9 @@ ACharacterBase::ACharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	mArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Arm"));
-	mCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	mDirScene = CreateDefaultSubobject<USceneComponent>(TEXT("DirScene"));
+	mArm = MyObject(USpringArmComponent, "Arm");
+	mCamera = MyObject(UCameraComponent, "Camera");
+	mDirScene = MyObject(USceneComponent, "DirScene");
 
 	mArm->SetupAttachment(RootComponent);
 	mCamera->SetupAttachment(mArm);
@@ -27,16 +27,16 @@ ACharacterBase::ACharacterBase()
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Player"));
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	mDodgeAfterImage = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DodgeAfterImage"));
+	mDodgeAfterImage = MyObject(UNiagaraComponent, "DodgeAfterImage");
 	mDodgeAfterImage->SetupAttachment(GetMesh());
 	mDodgeAfterImage->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	static ConstructorHelpers::FObjectFinder<UNiagaraSystem>
-		NS(TEXT("/Script/Niagara.NiagaraSystem'/Game/Niagara/NS_DodgeAfterImage.NS_DodgeAfterImage'"));
+
+	ObjectFinder(UNiagaraSystem, NS, "/Script/Niagara.NiagaraSystem'/Game/Niagara/NS_DodgeAfterImage.NS_DodgeAfterImage'");
 	if (NS.Succeeded())
 		mDodgeAfterImage->SetAsset(NS.Object);
 	mDodgeAfterImage->bAutoActivate = false;
 
-	mDodgePostProcess = CreateDefaultSubobject<UPostProcessComponent>(TEXT("DodgePostProcess"));
+	mDodgePostProcess = MyObject(UPostProcessComponent, "DodgePostProcess");
 	mDodgePostProcess->SetupAttachment(RootComponent);
 
 }
@@ -91,44 +91,46 @@ void ACharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (mDisappear)
-		SetActorLocation(GetActorLocation() - mDisappearDir * 5);
-
-	if (mForward)
+	if (mDisappear) // 캐릭터가 사라짐 <- 변경 전 캐릭터에 적용
+		SetActorLocation(GetActorLocation() - mDisappearDir * 5); // 현재 위치에서 뒤로감
+	
+	if (mForward) // 앞으로 전진 <- 변경 후 캐릭터에 적용
 	{
-		mForwardTimer += DeltaTime;
-		if (mForwardTimer < 0.5)
-			AddMovementInput(mDisappearDir, 1);
-		else
+		mForwardTimer += DeltaTime; // 타이머
+		if (mForwardTimer < 0.5) // 0.5초 동안만 작동
+			AddMovementInput(mDisappearDir, 1); // 앞으로 나아감
+		else // 0.5초 후
 		{
-			mForward = false;
-			mForwardTimer = 0;
+			mForward = false; // 앞으로 나아가기 금지
+			mForwardTimer = 0; // 타이머는 0초로
 		}
 	}
 
-	if (!mPDEnable)
+	if (!mPDEnable) // 완벽한 회피가 불가능할 때
 	{
-		for (int32 i = 0; i < mTargetArray.Num(); ++i)
+		for (int32 i = 0; i < mTargetArray.Num(); ++i) // 타깃을 순회
 		{
-			if (!IsValid(mTargetArray[i]))
+			if (!IsValid(mTargetArray[i])) // 타깃이 유효하지 않음
 			{
-				mTargetArray.RemoveAtSwap(i);
-				i = -1;
+				mTargetArray.RemoveAtSwap(i); // 배열에서 타깃을 지움
+				i = -1; // 지웠으니 다시 확인
 				continue;
 			}
-			if (!IsValid(mTarget))
+			if (!mTarget.IsValid()) // 주 타깃이 유효하지 않다면 <- TWeakObjectPtr을 사용했으므로 .IsValid()
 			{
-				mTarget = mTargetArray[i];
+				mTarget = mTargetArray[i]; // 타깃 재설정
 				continue;
 			}
 
+			// 타깃과의 거리가 다른 타깃(몬스터들)보다 거리가 멀다면, 주 타깃 갱신
 			if ((mTarget->GetActorLocation() - GetActorLocation()).Length() > (mTargetArray[i]->GetActorLocation() - GetActorLocation()).Length())
 				mTarget = mTargetArray[i];
 		}
 	}
 
-	if (IsValid(mTarget))
+	if (mTarget.IsValid()) // 타깃이 유효하다면
 	{
+		// 나아갈 방향 설정
 		mDirVector = mTarget->GetActorLocation() - GetActorLocation() - FVector(0, 0, (mTarget->GetActorLocation() - GetActorLocation()).Z);
 		mDirVector.Normalize();
 	}
@@ -174,29 +176,30 @@ void ACharacterBase::PossessedBy(AController* NewController)
 	ACharacterState* CS = GetPlayerState<ACharacterState>();
 	if (IsValid(CS))
 	{
-		CS->SetCharacterName(mName);
-		CS->InitAbilitySystemComponent(this);
+		CS->SetCharacterName(mName); // 캐릭터 스테이트에 이름 넘겨주기
+		CS->InitAbilitySystemComponent(this); // 어빌리티 시스템 초기화
 	}
 }
 
 void ACharacterBase::CharacterMoveStart(const FInputActionInstance& Instance)
 {
-	if (mShowUI)
+	if (mShowUI) // UI가 보이고 있다면
 	{
-		mShowUI = !mShowUI;
-		ShowUI(mShowUI);
+		mShowUI = !mShowUI; // 안보인다고 알려주기
+		ShowUI(mShowUI); // UI 숨기기
 	}
 
 	UAnimInstanceBase* AIB = Cast<UAnimInstanceBase>(GetMesh()->GetAnimInstance());
 	if (IsValid(AIB))
 	{
-		AIB->SetMovingDodge(true);
-		AIB->SetStopMoveDodge(true);
+		AIB->SetMovingDodge(true); // 이동하면서 회피 가능
+		AIB->SetStopMoveDodge(true); // 이동하면서 회피 가능 <- 뮤리엘 전용
 	}
 
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (IsValid(ASC))
 	{
+		// GT 추가 <- 이동 중
 		if(!ASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.Moving"))))
 			ASC->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.Moving")));
 	}
@@ -266,41 +269,42 @@ void ACharacterBase::CharacterCameraRotation(const FInputActionInstance& Instanc
 
 void ACharacterBase::CharacterChange(const FInputActionInstance& Instance)
 {
-	if (mShowUI)
+	if (mShowUI) // UI가 보일 때에는 변경 금지
 		return;
 
 	if (ACharacterController* CC = GetController<ACharacterController>())
 	{
 		if (UAnimInstanceBase* AB = Cast<UAnimInstanceBase>(GetMesh()->GetAnimInstance()))
 		{
+			// 변경 전 캐릭터 삭제
 			GetWorld()->GetTimerManager().SetTimer(mChangeTimer, this, &ACharacterBase::CharacterDisappear, 0.5, false);
 
-			GetCapsuleComponent()->SetCollisionProfileName(TEXT("Spectator"));
+			GetCapsuleComponent()->SetCollisionProfileName(TEXT("Spectator")); // 진로에 방해되지 않게 콜리젼 변경
 						
-			FVector Pos = GetActorLocation();
+			FVector Pos = GetActorLocation(); // 변경 전 캐릭터 위치 저장
 
 			ACharacterState* CS = GetPlayerState<ACharacterState>();
 			if (IsValid(CS))
 			{
-				CS->SaveCharacterInfo();
-				CS->PlayButtonAnimation(3);
+				CS->SaveCharacterInfo(); // 캐릭터의 정보 저장
+				CS->PlayButtonAnimation(3); // 캐릭터 변경 아이콘 이펙트 실행
 			}
 
+			// GT로 완벽한 회피 가능 여부 확인
 			mPDEnable = GetAbilitySystemComponent()->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.State.PDEnable")));
-			if (mPDEnable)
+			if (mPDEnable) // 완벽한 회피 가능
 			{
-				CC->SetCounterEnable(true);
-				FRotator Rot = (mTarget->GetActorLocation() - GetActorLocation()).Rotation();
-				CC->CharacterChange(Pos, mArm->GetRelativeRotation(), Rot.Yaw);
-				FinishDilation();
-				UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.5);
+				CC->SetCounterEnable(true); // 패링 지원 가능
+				FRotator Rot = (mTarget->GetActorLocation() - GetActorLocation()).Rotation(); // 대상 각도 설정
+				CC->CharacterChange(Pos, mArm->GetRelativeRotation(), Rot.Yaw); // 위치, 카메라 각도, 대상 각도 전달
+				UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.5); // 슬로우모션 시작
 
-				Destroy();
+				Destroy(); // 액터 파괴
 			}
 			else
 			{
-				CC->CharacterChange(Pos, mArm->GetRelativeRotation(), AB->GetDirYaw());
-				DisappearAnimation();
+				CC->CharacterChange(Pos, mArm->GetRelativeRotation(), AB->GetDirYaw()); // 위치, 카메라 각도, 바라보고있는 방향 전달
+				DisappearAnimation(); // 캐릭터 삭제
 			}
 
 			mDisappear = true;
@@ -312,17 +316,17 @@ void ACharacterBase::CharacterChange(const FInputActionInstance& Instance)
 
 void ACharacterBase::CharacterDodge(const FInputActionInstance& Instance)
 {
-	if (mShowUI)
-
+	if (mShowUI) // UI가 있을 시 사용 금지
 		return;
+
 	ACharacterState* CS = GetPlayerState<ACharacterState>();
 	if (IsValid(CS))
-		CS->PlayButtonAnimation(1);
+		CS->PlayButtonAnimation(1); // 회피 버튼 클릭 이펙트 재생
 
-	if (GetPlayerState<ACharacterState>()->PlayGA_Dodge())
+	if (GetPlayerState<ACharacterState>()->PlayGA_Dodge()) // GA 실행
 	{
-		mAttackEnable = false;
-		mSkillEnable = false;
+		mAttackEnable = false; // 회피 중 공격 불가
+		mSkillEnable = false; // 회피 중 스킬 불가
 	}
 }
 
@@ -380,7 +384,6 @@ void ACharacterBase::CharacterSkillTriggered(const FInputActionInstance& Instanc
 	if (mShowUI)
 		return;
 
-	LongSkillTriggered();
 }
 
 void ACharacterBase::CharacterSkillCompleted(const FInputActionInstance& Instance)
@@ -398,8 +401,6 @@ void ACharacterBase::CharacterUltimate(const FInputActionInstance& Instance)
 
 	if (!mUltimateEnable)
 		return;
-
-	FinishDilation();
 
 	Ultimate();
 	mUltimateEnable = false;
@@ -478,24 +479,8 @@ void ACharacterBase::CharacterDisappear()
 	Destroy();
 }
 
-void ACharacterBase::FinishDilation()
-{
-	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-	if (IsValid(ASC))
-		ASC->RemoveLooseGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("Character.NoDamage")));
-
-	if (mUltimateDilation)
-		return;
-
-	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
-	mDPPEnable = true;
-	mMoveEnable = true;
-	
-}
-
 void ACharacterBase::DodgeAttack()
 {
-	FinishDilation();
 }
 
 void ACharacterBase::SetCameraRotation(FRotator CameraRotation)
@@ -504,14 +489,14 @@ void ACharacterBase::SetCameraRotation(FRotator CameraRotation)
 	mArm->SetRelativeRotation(CameraRotation);
 }
 
-void ACharacterBase::SetDirYaw(float DirYaw)
+void ACharacterBase::SetDirYawChange(float DirYaw)
 {
 	if (UAnimInstanceBase* AB = Cast<UAnimInstanceBase>(GetMesh()->GetAnimInstance()))
 	{
-		float RYaw = FMath::RandRange(-45, 45);
-		AB->SetDirYaw(DirYaw);
-		mDisappearDir = FRotator(0, DirYaw + RYaw, 0).Vector();
-		mForward = true;
+		float RYaw = FMath::RandRange(-45, 45); // -45도부터 45도까지 랜덤하게 설정
+		AB->SetDirYaw(DirYaw); // 캐릭터가 바라보는 방향은 애님 인스턴스 블루프린트의 Rotate Root Bone 노드 사용
+		mDisappearDir = FRotator(0, DirYaw + RYaw, 0).Vector(); // 캐릭터가 사라질 방향 설정
+		mForward = true; // 앞으로 나아가기
 	}
 }
 
@@ -519,13 +504,6 @@ void ACharacterBase::SetTargeting(AActor* Target)
 {
 	if (!mTargetArray.Contains(Target))
 		mTargetArray.Add(Target);
-}
-
-void ACharacterBase::SetPDEnable(AActor* Target)
-{
-	mPDEnable = true;
-	mTarget = Target;
-	GetWorld()->GetTimerManager().SetTimer(mPDFail, this, &ACharacterBase::PDEnd, 0.5);
 }
 
 void ACharacterBase::ShowUI(bool A)
@@ -553,13 +531,13 @@ void ACharacterBase::ShowUI(bool A)
 
 void ACharacterBase::SetNPCTalking(bool A)
 {
-	mNPCTalking = A;
-
 	ACharacterState* CS = GetPlayerState<ACharacterState>();
 	if (!IsValid(CS))
 		return;
 
-	CS->ShowFKey(A);
+	mNPCTalking = A;
+
+	CS->ShowFKey(mNPCTalking);
 }
 
 void ACharacterBase::CounterChange()
@@ -568,33 +546,33 @@ void ACharacterBase::CounterChange()
 	if (!IsValid(CC))
 		return;
 
-	if (!CC->GetCounterEnable())
+	if (!CC->GetCounterEnable()) // 기본은 패링 지원 불가능 상태
 		return;
 
 	mMoveEnable = false;
-	CC->SetCounterEnable(false);
-	mForward = false;
+	CC->SetCounterEnable(false); // 이 함수가 실행 됐다는 것은, 패링 지원 가능했다는 것 -> 다시 불가능 상태로
+	mForward = false; // 패링 지원 시에는 앞으로 나아갈 필요가 없음
 	UAnimInstanceBase* AIB = Cast<UAnimInstanceBase>(GetMesh()->GetAnimInstance());
 	if (IsValid(AIB))
-		AIB->PlayDodgeAndCounterAttack(1);
+		AIB->PlayDodgeAndCounterAttack(1); // 회피 공격 애니메이션은 0(사용하지는 않음), 패링 지원 애니메이션은 1
 
-	UNiagaraSystem* NS = LoadObject<UNiagaraSystem>(GetWorld(), TEXT("/Script/Niagara.NiagaraSystem'/Game/Niagara/NS_Wave.NS_Wave'"));
-	if (IsValid(NS))
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS, GetActorLocation());
+	// UNiagaraSystem* NS = LoadObject<UNiagaraSystem>(GetWorld(), TEXT("/Script/Niagara.NiagaraSystem'/Game/Niagara/NS_Wave.NS_Wave'"));
+	// if (IsValid(NS))
+	// 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS, GetActorLocation()); // 일렁이는 나이아가라 효과
 	
 	TArray<FHitResult> Results;
 	bool Collision = GetWorld()->SweepMultiByProfile(Results, GetActorLocation(), GetActorLocation(), FQuat::Identity, TEXT("PlayerSkill"),
-		FCollisionShape::MakeSphere(350));
+		FCollisionShape::MakeSphere(350)); // 패링 지원 공격의 범위
 	if (Collision)
 	{
 		ACharacterState* CS = GetPlayerState<ACharacterState>();
-		for (int32 i = 0; i < Results.Num(); ++i)
+		for (int32 i = 0; i < Results.Num(); ++i) // 패링 지원 공격을 받은 대상들을 순회
 		{
 			AMonsterBase* Monster = Cast<AMonsterBase>(Results[i].GetActor());
-			if (IsValid(CS) && IsValid(Monster))
+			if (IsValid(CS) && IsValid(Monster)) // 몬스터라면 아리 실행
 			{
-				Monster->PlayKnockback(GetActorLocation());
-				CS->PlayGE_CounterAttack(mName, Monster->GetAbilitySystemComponent());
+				Monster->PlayKnockback(GetActorLocation()); // 몬스터는 현재 위치로부터 넉백
+				CS->PlayGE_CounterAttack(mName, Monster->GetAbilitySystemComponent()); // 캐릭터 스테이트에서 Gameplay Effect 실행
 			}
 		}
 	}
@@ -623,18 +601,4 @@ void ACharacterBase::LaunchCharacter(FVector LaunchVelocity, bool bXYOverride, b
 		AIB->SetIsKnockback(true);
 		AIB->StopAllMontages(0.1);
 	}
-}
-
-float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-{
-	DamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	
-	// FVector Dir = GetActorLocation() - DamageCauser->GetActorLocation();
-	// Dir -= FVector(0, 0, Dir.Z);
-	// Dir.Normalize();
-	// 
-	// LaunchCharacter(Dir * 1000 + FVector(0, 0, 200), false, false);
-	// SetDirYaw((- Dir).Rotation().Yaw);
-
-	return DamageAmount;
 }

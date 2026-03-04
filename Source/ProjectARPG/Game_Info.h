@@ -17,6 +17,9 @@
 
 #include "Components/WidgetComponent.h"
 
+#define MyObject(Object, Name) CreateDefaultSubobject<Object>(TEXT(Name))
+#define ObjectFinder(Object, Name, Path) static ConstructorHelpers::FObjectFinder<Object> Name(TEXT(Path));
+
 void Test(FString T, float Second = 10, FColor Color = FColor::Red);
 
 void Log(FString T);

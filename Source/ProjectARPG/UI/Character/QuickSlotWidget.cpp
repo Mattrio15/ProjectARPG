@@ -62,7 +62,11 @@ void UQuickSlotWidget::SetUnHovered(int32 Index)
 	if (!mSlotClick[Index])
 		mImage_Slot[Index]->SetOpacity(0);
 	else
+	{
+		if (IsValid(mSlotTexture[Index]))
+			mImage_Slot[Index]->SetBrushFromTexture(mSlotTexture[Index]);
 		mImage_Slot[Index]->SetOpacity(1);
+	}
 }
 
 void UQuickSlotWidget::SetSlot(int32 Index)
@@ -71,7 +75,8 @@ void UQuickSlotWidget::SetSlot(int32 Index)
 	{
 		mImage_Slot[Index]->SetBrushFromTexture(mItem->GetImage()); // 이미지 설정
 		mImage_Slot[Index]->SetOpacity(1);							// 투명 끄기
-		mSlotClick[Index] = true;									// 슬롯에 아이엠이 있음
+		mSlotClick[Index] = true;									// 슬롯에 아이템이 있음
+		mSlotTexture[Index] = mItem->GetImage();
 		
 		ACharacterState* CS = GetOwningPlayer()->GetPlayerState<ACharacterState>();
 		if (IsValid(CS))

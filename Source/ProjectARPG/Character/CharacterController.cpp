@@ -15,6 +15,9 @@
 
 ACharacterController::ACharacterController()
 {
+	ObjectFinder(UNiagaraSystem, NS, "/Script/Niagara.NiagaraSystem'/Game/Niagara/NS_Wave.NS_Wave'");
+	if (NS.Succeeded())
+		mCounterAttackEffect = NS.Object;
 }
 
 void ACharacterController::BeginPlay()
@@ -84,7 +87,7 @@ void ACharacterController::SpawnCharacter()
 	CB->SetActorLocation(SD.CharacterLocation);
 	CB->SetActorRotation(SD.CharacterRotation);
 	CB->SetCameraRotation(SD.CameraRotation);
-	CB->SetDirYaw(SD.DirYaw);
+	CB->SetDirYawChange(SD.DirYaw);
 
 	OnPossess(CB);
 
@@ -122,7 +125,7 @@ void ACharacterController::CharacterChange(FVector Postion, FRotator CameraRotat
 	{
 		MyCharacter->SetActorLocation(Postion);
 		MyCharacter->SetCameraRotation(CameraRotation);
-		MyCharacter->SetDirYaw(DirYaw);
+		MyCharacter->SetDirYawChange(DirYaw);
 		OnPossess(MyCharacter);
 
 		if (mCounterEnable)
@@ -140,6 +143,11 @@ void ACharacterController::CharacterChange(FVector Postion, FRotator CameraRotat
 				mCounterCamera->PostOn(true);
 			}
 			MyCharacter->CounterChange();
+			if (mCounterAttackEffect.IsValid())
+			{
+				UNiagaraSystem* NS = mCounterAttackEffect.Get();
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS, MyCharacter->GetActorLocation());
+			}
 
 			USoundBase* SB = LoadObject<USoundBase>(GetWorld(), TEXT("/Script/Engine.SoundWave'/Game/Sound/SW_Counter.SW_Counter'"));
 			if (IsValid(SB))

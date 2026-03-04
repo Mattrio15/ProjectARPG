@@ -101,7 +101,7 @@ void ACharacterState::BeginPlay()
 	if (!IsValid(GI))
 		return;
 
-	if (GI->GetIsNewGame())
+	if (!GI->GetIsNewGame())
 	{
 		ULevelSequence* LS = LoadObject<ULevelSequence>(GetWorld(), TEXT("/Script/LevelSequence.LevelSequence'/Game/LevelSequence/LS_Start.LS_Start'"));
 		if (IsValid(LS))

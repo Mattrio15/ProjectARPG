@@ -38,6 +38,7 @@ protected:
 	TArray<UImage*> mImage_Slot;
 	TArray<bool> mSlotClick;
 	TArray<UTextBlock*> mItemCount;
+	TArray<UTexture2D*> mSlotTexture = { nullptr, nullptr, nullptr };
 
 protected:
 	virtual void NativeOnInitialized();

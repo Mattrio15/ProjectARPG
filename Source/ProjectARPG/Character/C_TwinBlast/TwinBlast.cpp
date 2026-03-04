@@ -187,7 +187,7 @@ void ATwinBlast::RealAttack(int32 Index)
 {
 	FHitResult Result;
 	FVector Pos = GetActorLocation() + mDirScene->GetForwardVector() * 10000 + FVector(0, 0, 50);
-	if (IsValid(mTarget))
+	if (mTarget.IsValid())
 		Pos = mTarget->GetActorLocation() + FVector(0, 0, 50);
 	bool Collision = GetWorld()->LineTraceSingleByProfile(Result, GetActorLocation() + FVector(0, 0, 50), Pos, TEXT("PlayerSkill"));
 
@@ -212,7 +212,7 @@ void ATwinBlast::RealSkill()
 {
 	FHitResult Result;
 	FVector Pos = GetActorLocation() + mDirScene->GetForwardVector() * 10000 + FVector(0, 0, 50);
-	if (IsValid(mTarget))
+	if (mTarget.IsValid())
 		Pos = mTarget->GetActorLocation() + FVector(0, 0, 50);
 	bool Collision = GetWorld()->LineTraceSingleByProfile(Result, GetActorLocation() + FVector(0, 0, 50), Pos, TEXT("PlayerSkill"));
 

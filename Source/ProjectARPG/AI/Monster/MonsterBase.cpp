@@ -124,9 +124,7 @@ void AMonsterBase::BeginPlay()
 	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
 	if (IsValid(GI))
 	{
-		APlayerController* PC = GI->GetFirstLocalPlayerController();
-		if (IsValid(PC))
-			mPlayer = PC->GetPawn();
+		mPlayerController = GI->GetFirstLocalPlayerController();
 	}
 }
 
@@ -134,15 +132,15 @@ void AMonsterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (IsValid(mPlayer))
+	if (IsValid(mPlayerController))
 	{
-		FVector PlayerLoc = mPlayer->GetActorLocation();
-		FVector MonsterLoc = GetActorLocation();
-		float Len = (PlayerLoc - MonsterLoc).Length();
-		if (Len > 3000)
+		FVector PlayerPos = mPlayerController->GetPawn()->GetActorLocation();
+		FVector MonsterPos = GetActorLocation();
+		float Dis = (PlayerPos - MonsterPos).Length();
+		if (Dis > 3000)
 			mMonsterHPWidget->SetVisibility(false);
 		else
-			mMonsterHPWidget->SetVisibility(true);		
+			mMonsterHPWidget->SetVisibility(true);
 	}
 }
 

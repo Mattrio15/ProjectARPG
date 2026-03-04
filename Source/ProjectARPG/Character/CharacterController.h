@@ -24,6 +24,9 @@ protected:
 	ACounterCamera* mCounterCamera;
 
 	FTimerHandle mSpawnTimer;
+	
+	UPROPERTY()
+	TSoftObjectPtr<UNiagaraSystem> mCounterAttackEffect; // 캐릭터 베이스에서 넘어옴
 
 protected:
 	virtual void BeginPlay() override;

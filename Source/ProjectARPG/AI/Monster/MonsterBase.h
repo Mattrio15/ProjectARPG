@@ -54,7 +54,7 @@ protected:
 
 	UElementalDataAsset* mEDA;
 
-	APawn* mPlayer = nullptr;
+	APlayerController* mPlayerController = nullptr;
 
 public:
 	virtual void SetGenericTeamId(const FGenericTeamId& TeamID) {}
