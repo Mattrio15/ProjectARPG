@@ -5,11 +5,9 @@
 
 ACounterCamera::ACounterCamera()
 {
-	PrimaryActorTick.bCanEverTick = true;
-
-	mRoot = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	mArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Arm"));
-	mCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	mRoot = MyObject(USceneComponent, "Root");
+	mArm = MyObject(USpringArmComponent, "Arm");
+	mCamera = MyObject(UCameraComponent, "Camera");
 
 	SetRootComponent(mRoot);
 	mArm->SetupAttachment(mRoot);
@@ -17,22 +15,10 @@ ACounterCamera::ACounterCamera()
 
 	mArm->TargetArmLength = 300;
 
-	mPost = CreateDefaultSubobject<UPostProcessComponent>(TEXT("Post"));
+	mPost = MyObject(UPostProcessComponent, "Post");
 	mPost->SetupAttachment(mRoot);
 	mPost->Settings.SceneFringeIntensity = 5;
 	mPost->Settings.VignetteIntensity = 1;
-}
-
-void ACounterCamera::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-void ACounterCamera::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 void ACounterCamera::PostOff()

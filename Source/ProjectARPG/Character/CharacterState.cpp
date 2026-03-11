@@ -100,7 +100,7 @@ void ACharacterState::BeginPlay()
 	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
 	if (!IsValid(GI))
 		return;
-
+	
 	if (!GI->GetIsNewGame())
 	{
 		ULevelSequence* LS = LoadObject<ULevelSequence>(GetWorld(), TEXT("/Script/LevelSequence.LevelSequence'/Game/LevelSequence/LS_Start.LS_Start'"));
@@ -129,7 +129,10 @@ void ACharacterState::BeginPlay()
 							FInputModeGameOnly Mode;
 							APlayerController* PC = WeakThis->GetPlayerController();
 							if (IsValid(PC))
+							{
 								PC->SetInputMode(Mode);
+								PC->SetViewTarget(WeakThis->GetPawn());
+							}
 						}
 					},
 					Duration.AsSeconds(), false);
@@ -137,6 +140,7 @@ void ACharacterState::BeginPlay()
 
 		}
 	}
+
 }
 
 void ACharacterState::SetElemental(UAbilitySystemComponent* ASC, FGameplayTag Tag)

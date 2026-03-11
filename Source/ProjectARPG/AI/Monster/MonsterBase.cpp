@@ -134,13 +134,17 @@ void AMonsterBase::Tick(float DeltaTime)
 
 	if (IsValid(mPlayerController))
 	{
-		FVector PlayerPos = mPlayerController->GetPawn()->GetActorLocation();
-		FVector MonsterPos = GetActorLocation();
-		float Dis = (PlayerPos - MonsterPos).Length();
-		if (Dis > 3000)
-			mMonsterHPWidget->SetVisibility(false);
-		else
-			mMonsterHPWidget->SetVisibility(true);
+		APawn* Pawn = mPlayerController->GetPawn();
+		if (IsValid(Pawn))
+		{
+			FVector PlayerPos = mPlayerController->GetPawn()->GetActorLocation();
+			FVector MonsterPos = GetActorLocation();
+			float Dis = (PlayerPos - MonsterPos).Length();
+			if (Dis > 3000)
+				mMonsterHPWidget->SetVisibility(false);
+			else
+				mMonsterHPWidget->SetVisibility(true);
+		}
 	}
 }
 

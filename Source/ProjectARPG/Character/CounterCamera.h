@@ -15,20 +15,17 @@ public:
 	ACounterCamera();
 
 protected:
-	USceneComponent* mRoot;
-	USpringArmComponent* mArm;
-	UCameraComponent* mCamera;
+	UPROPERTY()
+	TObjectPtr<USceneComponent> mRoot; // 루트
+	UPROPERTY()
+	TObjectPtr<USpringArmComponent> mArm; // 스프링 암
+	UPROPERTY()
+	TObjectPtr<UCameraComponent> mCamera; // 카메라
 
 	UPROPERTY(VisibleAnywhere)
-	UPostProcessComponent* mPost;
+	TObjectPtr<UPostProcessComponent> mPost; // 포스트 프로세스 컴포넌트
 
-	FTimerHandle mPostTimer;
-
-protected:
-	virtual void BeginPlay() override;
-
-public:
-	virtual void Tick(float DeltaTime) override;
+	FTimerHandle mPostTimer; // 포스트 프로세스 타이머
 
 protected:
 	void PostOff();

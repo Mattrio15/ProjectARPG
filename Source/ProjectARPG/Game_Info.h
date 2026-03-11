@@ -19,6 +19,9 @@
 
 #define MyObject(Object, Name) CreateDefaultSubobject<Object>(TEXT(Name))
 #define ObjectFinder(Object, Name, Path) static ConstructorHelpers::FObjectFinder<Object> Name(TEXT(Path));
+#define ClassFinder(Object, Name, Path) static ConstructorHelpers::FClassFinder<Object> Name(TEXT(Path));
+
+#define SoftPath(Object, Path) TSoftObjectPtr<Object>(FSoftObjectPath(TEXT(Path)));
 
 void Test(FString T, float Second = 10, FColor Color = FColor::Red);
 
