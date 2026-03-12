@@ -74,12 +74,18 @@ protected:
 	bool mShowUI = false;									  // UI 보이기 여부
 	bool mNPCTalking = false;								  // NPC 대화 여부
 
+	UPROPERTY()
+	TSoftObjectPtr<UAnimationAsset> mDisappearAnim;			  // 퇴장 애니메이션 애셋
+
+	UPROPERTY()
+	TObjectPtr<UAnimInstanceBase> mAnimInstance;			  // 애님 인스턴스
+
 public:
 	// 팀 아이디 관련 함수들
 	virtual void SetGenericTeamId(const FGenericTeamId& TeamID) {}				
 	virtual FGenericTeamId GetGenericTeamId() const { return mTeamId; }			
 	virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const;
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const;			
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const;
 
 protected:
 	// 기본 함수들
@@ -116,10 +122,10 @@ protected:
 
 protected:
 	void CharacterDisappear();											  // 캐릭터 사라지기
-	virtual void DisappearAnimation() {}								  // 캐릭터 사라지기 애니메이션
+	virtual void DisappearAnimation();									  // 캐릭터 사라지기 애니메이션
 	void PerfectDodgeFail() { mPDEnable = false; }						  // 완벽한 회피 실패
 
-	virtual void ShortAttack(){}										  // 짧게 누르는 공격
+	virtual void ShortAttack();											  // 짧게 누르는 공격
 	virtual void LongAttack(){}											  // 길게 누르는 공격
 	virtual void MoveAttack(){}											  // 이동 가능한 공격
 	virtual void ShortSkill(){}											  // 짧게 누르는 스킬

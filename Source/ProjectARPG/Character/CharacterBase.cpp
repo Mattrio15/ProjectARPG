@@ -79,6 +79,8 @@ void ACharacterBase::BeginPlay()
 
 	mDisappearDir = mDirScene->GetForwardVector();
 
+	mAnimInstance = Cast<UAnimInstanceBase>(GetMesh()->GetAnimInstance());
+
 }
 
 void ACharacterBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -477,6 +479,19 @@ void ACharacterBase::CharacterFKey(const FInputActionInstance& Instance)
 void ACharacterBase::CharacterDisappear()
 {
 	Destroy();
+}
+
+void ACharacterBase::DisappearAnimation()
+{
+	UAnimationAsset* AA = mDisappearAnim.LoadSynchronous();
+	if (IsValid(AA))
+		GetMesh()->PlayAnimation(AA, true);
+}
+
+void ACharacterBase::ShortAttack()
+{
+	if (IsValid(mAnimInstance))
+		mAnimInstance->PlayShortAttack();
 }
 
 void ACharacterBase::DodgeAttack()
