@@ -213,7 +213,7 @@ void ATerra::RealAttack(int32 Index)
 
 				AMonsterBase* Monster = Cast<AMonsterBase>(Results[i].GetActor());
 				if (IsValid(Monster) && IsValid(CS))
-					CS->PlayGE_Attack(TEXT("Terra"), Monster->GetAbilitySystemComponent());
+					CS->PlayGE_Attack(mName, Monster->GetAbilitySystemComponent());
 			}
 
 			USoundBase* SB = LoadObject<USoundBase>(GetWorld(), TEXT("/Script/Engine.SoundWave'/Game/Sound/SW_Terra_Attack_Hit.SW_Terra_Attack_Hit'"));

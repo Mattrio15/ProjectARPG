@@ -19,41 +19,39 @@
 
 ACharacterState::ACharacterState()
 {
-	mASC = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("ASC"));
+	mASC = MyObject(UAbilitySystemComponent, "ASC");
 	mASC->SetIsReplicated(true); // 네트워크 동기화
 	mASC->SetReplicationMode(EGameplayEffectReplicationMode::Mixed); // 동기화 방법
 
-	mCAS = CreateDefaultSubobject<UCharacterAttributeSet>(TEXT("CAS"));
+	mAS_Character = MyObject(UCharacterAttributeSet, "CAS");
+		
+	ObjectFinder(UDataTable, DT_CharacterInfo, "/Script/Engine.DataTable'/Game/GAS/GameplayEffect/Character/DT_CharacterInfo.DT_CharacterInfo'");
+	if (DT_CharacterInfo.Succeeded())
+		mDT_CharacterInfo = DT_CharacterInfo.Object;
+		
+	ObjectFinder(UAttributeDataAsset, DA_AttributeTag, "/Script/ProjectARPG.AttributeDataAsset'/Game/GAS/DA_AttributeTag.DA_AttributeTag'");
+	if (DA_AttributeTag.Succeeded())
+		mDA_AttributeTag = DA_AttributeTag.Object;
 
-	static ConstructorHelpers::FObjectFinder<UDataTable>
-		TableAsset(TEXT("/Script/Engine.DataTable'/Game/GAS/GameplayEffect/Character/DT_CharacterInfo.DT_CharacterInfo'"));
-	if (TableAsset.Succeeded())
-		mCharacterInfoTable = TableAsset.Object;
+	ObjectFinder(UDA_CharacterGE, DA_CharacterGE, "/Script/ProjectARPG.DA_CharacterGE'/Game/GAS/GameplayEffect/Character/DA_CharacterGE.DA_CharacterGE'");
+	if (DA_CharacterGE.Succeeded())
+		mDA_CharacterGE = DA_CharacterGE.Object;
 
-	static ConstructorHelpers::FObjectFinder<UAttributeDataAsset>
-		DataAsset(TEXT("/Script/ProjectARPG.AttributeDataAsset'/Game/GAS/DA_AttributeTag.DA_AttributeTag'"));
-	if (DataAsset.Succeeded())
-		mADA = DataAsset.Object;
+	ObjectFinder(UDataTable, DT_CharacterGE, "/Script/Engine.DataTable'/Game/GAS/GameplayEffect/Character/DT_CharacterGE.DT_CharacterGE'");
+	if (DT_CharacterGE.Succeeded())
+		mDT_CharacterGE = DT_CharacterGE.Object;
 
-	static ConstructorHelpers::FObjectFinder<UDA_CharacterGE>
-		GEAsset(TEXT("/Script/ProjectARPG.DA_CharacterGE'/Game/GAS/GameplayEffect/Character/DA_CharacterGE.DA_CharacterGE'"));
-	if (GEAsset.Succeeded())
-		mCharacterGE = GEAsset.Object;
+	ObjectFinder(UAbilityDataAsset, DA_CharacterGA, "/Script/ProjectARPG.AbilityDataAsset'/Game/GAS/GameplayAbility/DA_CharacterAbility.DA_CharacterAbility'");
+	if (DA_CharacterGA.Succeeded())
+		mDA_CharacterGA = DA_CharacterGA.Object;
 
-	static ConstructorHelpers::FObjectFinder<UAbilityDataAsset>
-		AbilityDataAsset(TEXT("/Script/ProjectARPG.AbilityDataAsset'/Game/GAS/GameplayAbility/DA_CharacterAbility.DA_CharacterAbility'"));
-	if (AbilityDataAsset.Succeeded())
-		mAbilityDataAsset = AbilityDataAsset.Object;
+	ClassFinder(UUserWidget, MainWidgetClass, "/Script/UMGEditor.WidgetBlueprint'/Game/UI/Character/WB_MainWidget.WB_MainWidget_C'");
+	if (MainWidgetClass.Succeeded())
+		mMainWidgetClass = MainWidgetClass.Class;
 
-	static ConstructorHelpers::FClassFinder<UUserWidget>
-		MainWidget(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/Character/WB_MainWidget.WB_MainWidget_C'"));
-	if (MainWidget.Succeeded())
-		mMainWidgetClass = MainWidget.Class;
+	mItemComponent = MyObject(UItemComponent, "ItemComponent");
 
-	mItemComponent = CreateDefaultSubobject<UItemComponent>(TEXT("ItemComponent"));
-
-	static ConstructorHelpers::FClassFinder<UGameplayAbility>
-		GA_Dodge(TEXT("/Script/Engine.Blueprint'/Game/GAS/GameplayAbility/Character/GA_Dodge.GA_Dodge_C'"));
+	ClassFinder(UGameplayAbility, GA_Dodge, "/Script/Engine.Blueprint'/Game/GAS/GameplayAbility/Character/GA_Dodge.GA_Dodge_C'");
 	if (GA_Dodge.Succeeded())
 		mGA_Dodge = GA_Dodge.Class;
 
@@ -80,16 +78,16 @@ void ACharacterState::BeginPlay()
 		{
 			mMainWidget->AddToViewport();
 
-			mCAS->OnHealthChanged.AddUObject(mHPWidget, &UCharacterHPWidget::SetHPBar);
-			mCAS->OnManaChanged.AddUObject(mHPWidget, &UCharacterHPWidget::SetMPBar);
+			mAS_Character->OnHealthChanged.AddUObject(mHPWidget, &UCharacterHPWidget::SetHPBar);
+			mAS_Character->OnManaChanged.AddUObject(mHPWidget, &UCharacterHPWidget::SetMPBar);
 
-			mInventory = Cast<UCharacterInventory>(mHPWidget->GetWidgetFromName(TEXT("WB_CharacterInventory")));
-			if (IsValid(mInventory))
+			mInventoryWidget = Cast<UCharacterInventory>(mHPWidget->GetWidgetFromName(TEXT("WB_CharacterInventory")));
+			if (IsValid(mInventoryWidget))
 			{
-				mInventory->SetVisibility(ESlateVisibility::Hidden);
-				mInventory->SetItemComponent(mItemComponent);
+				mInventoryWidget->SetVisibility(ESlateVisibility::Hidden);
+				mInventoryWidget->SetItemComponent(mItemComponent);
 				mItemComponent->SetAbilitySystemComponent(mASC);
-				mItemComponent->SetInventory(mInventory);
+				mItemComponent->SetInventory(mInventoryWidget);
 				mItemComponent->SetMainWidget(mHPWidget);
 			}
 
@@ -141,16 +139,30 @@ void ACharacterState::BeginPlay()
 		}
 	}
 
+	if (IsValid(mDT_CharacterGE))
+	{
+		TArray<FName> TA_Name = mDT_CharacterGE->GetRowNames();
+		for (int32 i = 0; i < TA_Name.Num(); ++i)
+		{
+			FName Name = TA_Name[i];
+			if (!mTM_CharacterGE.Contains(Name))
+			{
+				FCharacterGE* CharacterGE = mDT_CharacterGE->FindRow<FCharacterGE>(Name, TEXT(""));
+				mTM_CharacterGE.Add(Name, *CharacterGE);
+			}
+		}
+	}
+
 }
 
 void ACharacterState::SetElemental(UAbilitySystemComponent* ASC, FGameplayTag Tag)
 {
-	ASC->RemoveLooseGameplayTag(mADA->mElemental_IceTag);
-	ASC->RemoveLooseGameplayTag(mADA->mElemental_DarkTag);
-	ASC->RemoveLooseGameplayTag(mADA->mElemental_ElectricTag);
-	ASC->RemoveLooseGameplayTag(mADA->mElemental_BleedTag);
-	ASC->RemoveLooseGameplayTag(mADA->mElemental_LightTag);
-	ASC->RemoveLooseGameplayTag(mADA->mElemental_FireTag);
+	ASC->RemoveLooseGameplayTag(mDA_AttributeTag->mElemental_IceTag);
+	ASC->RemoveLooseGameplayTag(mDA_AttributeTag->mElemental_DarkTag);
+	ASC->RemoveLooseGameplayTag(mDA_AttributeTag->mElemental_ElectricTag);
+	ASC->RemoveLooseGameplayTag(mDA_AttributeTag->mElemental_BleedTag);
+	ASC->RemoveLooseGameplayTag(mDA_AttributeTag->mElemental_LightTag);
+	ASC->RemoveLooseGameplayTag(mDA_AttributeTag->mElemental_FireTag);
 
 	ASC->AddLooseGameplayTag(Tag);
 
@@ -168,26 +180,26 @@ void ACharacterState::InitAbilitySystemComponent(AActor* Avatar)
 	}
 	mASC->InitAbilityActorInfo(this, Avatar);
 
-	FCharacterInfo* InfoPtr = mCharacterInfoTable->FindRow<FCharacterInfo>(mCharacterName, TEXT(""));
+	FCharacterInfo* InfoPtr = mDT_CharacterInfo->FindRow<FCharacterInfo>(mCharacterName, TEXT(""));
 	if (!InfoPtr)
 		return;
 
-	if (!mCharacterInfo.Contains(mCharacterName))
-		mCharacterInfo.Add(mCharacterName, *InfoPtr);
+	if (!mTM_CharacterInfo.Contains(mCharacterName))
+		mTM_CharacterInfo.Add(mCharacterName, *InfoPtr);
 	
-	mCharacterInfo[mCharacterName].CharacterFace = InfoPtr->CharacterFace;
-	FCharacterInfo Info = mCharacterInfo[mCharacterName];
+	mTM_CharacterInfo[mCharacterName].CharacterFace = InfoPtr->CharacterFace;
+	FCharacterInfo Info = mTM_CharacterInfo[mCharacterName];
 
 	ACharacterBase* CB = Cast<ACharacterBase>(Avatar);
-	if (Info.CharacterInfo.Contains(mADA->mMoveSpeedTag))
-		CB->GetCharacterMovement()->MaxWalkSpeed = Info.CharacterInfo[mADA->mMoveSpeedTag];
+	if (Info.CharacterInfo.Contains(mDA_AttributeTag->mMoveSpeedTag))
+		CB->GetCharacterMovement()->MaxWalkSpeed = Info.CharacterInfo[mDA_AttributeTag->mMoveSpeedTag];
 	else
 		Test(TEXT("Empty!"));
 
 	FGameplayEffectContextHandle Context = mASC->MakeEffectContext();
-	if (IsValid(mCharacterGE->mGE_Init))
+	if (IsValid(mDA_CharacterGE->mGE_Init))
 	{
-		FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mCharacterGE->mGE_Init, 1, Context);
+		FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mDA_CharacterGE->mGE_Init, 1, Context);
 
 		for (auto& Data : Info.CharacterInfo)
 			Spec.Data->SetSetByCallerMagnitude(Data.Key, Data.Value);
@@ -198,9 +210,9 @@ void ACharacterState::InitAbilitySystemComponent(AActor* Avatar)
 		Log(TEXT("GE_Init Is Invalid!"));
 
 	mASC->ClearAllAbilities();
-	if (mAbilityDataAsset->mCharacterAbilityData.Contains(mCharacterName))
+	if (mDA_CharacterGA->mCharacterAbilityData.Contains(mCharacterName))
 	{
-		for (auto& Ability : mAbilityDataAsset->mCharacterAbilityData[mCharacterName].CharacterAbility)
+		for (auto& Ability : mDA_CharacterGA->mCharacterAbilityData[mCharacterName].CharacterAbility)
 		{
 			if (IsValid(Ability))
 			{
@@ -229,53 +241,68 @@ void ACharacterState::SaveCharacterInfo()
 
 	FCharacterInfo SaveInfo;
 
-	SaveInfo.CharacterInfo.Add(mADA->mHealthTag);
-	SaveInfo.CharacterInfo[mADA->mHealthTag] = CAS->GetHealth();
+	SaveInfo.CharacterInfo.Add(mDA_AttributeTag->mHealthTag);
+	SaveInfo.CharacterInfo[mDA_AttributeTag->mHealthTag] = CAS->GetHealth();
 
-	SaveInfo.CharacterInfo.Add(mADA->mManaTag);
-	SaveInfo.CharacterInfo[mADA->mManaTag] = CAS->GetMana();
+	SaveInfo.CharacterInfo.Add(mDA_AttributeTag->mManaTag);
+	SaveInfo.CharacterInfo[mDA_AttributeTag->mManaTag] = CAS->GetMana();
 
-	SaveInfo.CharacterInfo.Add(mADA->mAttackTag);
-	SaveInfo.CharacterInfo[mADA->mAttackTag] = CAS->GetAttack();
+	SaveInfo.CharacterInfo.Add(mDA_AttributeTag->mAttackTag);
+	SaveInfo.CharacterInfo[mDA_AttributeTag->mAttackTag] = CAS->GetAttack();
 
-	SaveInfo.CharacterInfo.Add(mADA->mDefenseTag);
-	SaveInfo.CharacterInfo[mADA->mDefenseTag] = CAS->GetDefense();
+	SaveInfo.CharacterInfo.Add(mDA_AttributeTag->mDefenseTag);
+	SaveInfo.CharacterInfo[mDA_AttributeTag->mDefenseTag] = CAS->GetDefense();
 
-	SaveInfo.CharacterInfo.Add(mADA->mMoveSpeedTag);
-	SaveInfo.CharacterInfo[mADA->mMoveSpeedTag] = CAS->GetMoveSpeed();
+	SaveInfo.CharacterInfo.Add(mDA_AttributeTag->mMoveSpeedTag);
+	SaveInfo.CharacterInfo[mDA_AttributeTag->mMoveSpeedTag] = CAS->GetMoveSpeed();
 
-	SaveInfo.CharacterInfo.Add(mADA->mCriticalRateTag);
-	SaveInfo.CharacterInfo[mADA->mCriticalRateTag] = CAS->GetCriticalRate();
+	SaveInfo.CharacterInfo.Add(mDA_AttributeTag->mCriticalRateTag);
+	SaveInfo.CharacterInfo[mDA_AttributeTag->mCriticalRateTag] = CAS->GetCriticalRate();
 
-	SaveInfo.CharacterInfo.Add(mADA->mCriticalChanceTag);
-	SaveInfo.CharacterInfo[mADA->mCriticalChanceTag] = CAS->GetCriticalChance();
+	SaveInfo.CharacterInfo.Add(mDA_AttributeTag->mCriticalChanceTag);
+	SaveInfo.CharacterInfo[mDA_AttributeTag->mCriticalChanceTag] = CAS->GetCriticalChance();
 
-	SaveInfo.CharacterInfo.Add(mADA->mSkillRateTag);
-	SaveInfo.CharacterInfo[mADA->mSkillRateTag] = CAS->GetSkillRate();
+	SaveInfo.CharacterInfo.Add(mDA_AttributeTag->mSkillRateTag);
+	SaveInfo.CharacterInfo[mDA_AttributeTag->mSkillRateTag] = CAS->GetSkillRate();
 
-	SaveInfo.CharacterInfo.Add(mADA->mUltimateRateTag);
-	SaveInfo.CharacterInfo[mADA->mUltimateRateTag] = CAS->GetUltimateRate();
+	SaveInfo.CharacterInfo.Add(mDA_AttributeTag->mUltimateRateTag);
+	SaveInfo.CharacterInfo[mDA_AttributeTag->mUltimateRateTag] = CAS->GetUltimateRate();
 
-	SaveInfo.CharacterFace = mCharacterInfo[mCharacterName].CharacterFace;
+	SaveInfo.CharacterFace = mTM_CharacterInfo[mCharacterName].CharacterFace;
 
-	mCharacterInfo[mCharacterName] = SaveInfo;
+	mTM_CharacterInfo[mCharacterName] = SaveInfo;
 
 }
 
 void ACharacterState::PlayGE_Attack(FName Name, UAbilitySystemComponent* ASC)
 {
-	if (mCharacterGE->mGE_Attack.Contains(Name))
+	// if (mDA_CharacterGE->mGE_Attack.Contains(Name))
+	// {
+	// 	if (IsValid(mDA_CharacterGE->mGE_Attack[Name]))
+	// 	{
+	// 		FGameplayEffectContextHandle Context = mASC->MakeEffectContext();
+	// 		FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mDA_CharacterGE->mGE_Attack[Name], 1, Context);
+	// 		mASC->ApplyGameplayEffectSpecToTarget(*Spec.Data.Get(), ASC);
+	// 	}
+	// }
+	// if (mDA_CharacterGE->mGE_Elemental_Tag.Contains(Name))
+	// 	if (!ASC->HasMatchingGameplayTag(mDA_CharacterGE->mGE_Elemental_Tag[Name]))
+	// 		SetElemental(ASC, mDA_CharacterGE->mGE_Elemental_Tag[Name]);
+
+	FCharacterGE* CharacterGE = mTM_CharacterGE.Find(Name);
+	if (CharacterGE)
 	{
-		if (IsValid(mCharacterGE->mGE_Attack[Name]))
+		TSubclassOf<UGameplayEffect> GE_Attack = CharacterGE->GE_Attack;
+		if (IsValid(GE_Attack))
 		{
 			FGameplayEffectContextHandle Context = mASC->MakeEffectContext();
-			FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mCharacterGE->mGE_Attack[Name], 1, Context);
+			FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(GE_Attack, 1, Context);
 			mASC->ApplyGameplayEffectSpecToTarget(*Spec.Data.Get(), ASC);
 		}
+		FGameplayTag GT = CharacterGE->GT_Elemental;
+		if (!ASC->HasMatchingGameplayTag(GT))
+			SetElemental(ASC, GT);
 	}
-	if (mCharacterGE->mGE_Elemental_Tag.Contains(Name))
-		if (!ASC->HasMatchingGameplayTag(mCharacterGE->mGE_Elemental_Tag[Name]))
-			SetElemental(ASC, mCharacterGE->mGE_Elemental_Tag[Name]);
 
 	TSubclassOf<UGameplayEffect> Mana = LoadClass<UGameplayEffect>(GetWorld(), TEXT("/Script/Engine.Blueprint'/Game/GAS/GameplayEffect/Character/GE_Mana.GE_Mana_C'"));
 	if (IsValid(Mana))
@@ -288,36 +315,36 @@ void ACharacterState::PlayGE_Attack(FName Name, UAbilitySystemComponent* ASC)
 
 void ACharacterState::PlayGE_CounterAttack(FName Name, UAbilitySystemComponent* ASC)
 {
-	if (mCharacterGE->mGE_CounterAttack.Contains(Name))
+	if (mDA_CharacterGE->mGE_CounterAttack.Contains(Name))
 	{
-		if (IsValid(mCharacterGE->mGE_CounterAttack[Name]))
+		if (IsValid(mDA_CharacterGE->mGE_CounterAttack[Name]))
 		{
 			FGameplayEffectContextHandle Context = mASC->MakeEffectContext();
-			FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mCharacterGE->mGE_CounterAttack[Name], 1, Context);
+			FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mDA_CharacterGE->mGE_CounterAttack[Name], 1, Context);
 			mASC->ApplyGameplayEffectSpecToTarget(*Spec.Data.Get(), ASC);
 		}
 	}
 
-	if (mCharacterGE->mGE_Elemental_Tag.Contains(Name))
-		if (!ASC->HasMatchingGameplayTag(mCharacterGE->mGE_Elemental_Tag[Name]))
-			SetElemental(ASC, mCharacterGE->mGE_Elemental_Tag[Name]);
+	if (mDA_CharacterGE->mGE_Elemental_Tag.Contains(Name))
+		if (!ASC->HasMatchingGameplayTag(mDA_CharacterGE->mGE_Elemental_Tag[Name]))
+			SetElemental(ASC, mDA_CharacterGE->mGE_Elemental_Tag[Name]);
 
 }
 
 void ACharacterState::PlayGE_Skill(FName Name, UAbilitySystemComponent* ASC)
 {
-	if (mCharacterGE->mGE_Skill.Contains(Name))
+	if (mDA_CharacterGE->mGE_Skill.Contains(Name))
 	{
-		if (IsValid(mCharacterGE->mGE_Skill[Name]))
+		if (IsValid(mDA_CharacterGE->mGE_Skill[Name]))
 		{
 			FGameplayEffectContextHandle Context = mASC->MakeEffectContext();
-			FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mCharacterGE->mGE_Skill[Name], 1, Context);
+			FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mDA_CharacterGE->mGE_Skill[Name], 1, Context);
 			mASC->ApplyGameplayEffectSpecToTarget(*Spec.Data.Get(), ASC);
 		}
 	}
-	if (mCharacterGE->mGE_Elemental_Tag.Contains(Name))
-		if (!ASC->HasMatchingGameplayTag(mCharacterGE->mGE_Elemental_Tag[Name]))
-			SetElemental(ASC, mCharacterGE->mGE_Elemental_Tag[Name]);
+	if (mDA_CharacterGE->mGE_Elemental_Tag.Contains(Name))
+		if (!ASC->HasMatchingGameplayTag(mDA_CharacterGE->mGE_Elemental_Tag[Name]))
+			SetElemental(ASC, mDA_CharacterGE->mGE_Elemental_Tag[Name]);
 
 }
 
@@ -341,12 +368,12 @@ void ACharacterState::ShowUI(bool A)
 
 void ACharacterState::ShowInventory(bool A)
 {
-	if (IsValid(mInventory))
+	if (IsValid(mInventoryWidget))
 	{
 		if (A)
-			mInventory->SetVisibility(ESlateVisibility::Visible);
+			mInventoryWidget->SetVisibility(ESlateVisibility::Visible);
 		else
-			mInventory->SetVisibility(ESlateVisibility::HitTestInvisible);
+			mInventoryWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 	}
 }
 
@@ -422,7 +449,7 @@ void ACharacterState::GetItem(UItemDataAsset* Item)
 void ACharacterState::SetCharacterFace()
 {
 	if (IsValid(mHPWidget))
-		mHPWidget->SetCharacterFace(mCharacterInfo[mCharacterName].CharacterFace);
+		mHPWidget->SetCharacterFace(mTM_CharacterInfo[mCharacterName].CharacterFace);
 
 }
 
@@ -441,7 +468,7 @@ FSaveGameData ACharacterState::GetSaveGameData()
 		Data.CameraRotation = Character->GetCameraRotation();
 		Data.DirYaw = Character->GetDirYaw();
 
-		for (auto& Map : mCharacterInfo)
+		for (auto& Map : mTM_CharacterInfo)
 		{
 			FCharacterStateInfo CSI;
 			CSI.CharacterState = Map.Value.CharacterInfo;
@@ -456,13 +483,13 @@ void ACharacterState::SetSaveGameData(FSaveGameData Data)
 {
 	for (auto& Map : Data.CharacterInfo)
 	{
-		if(mCharacterInfo.Contains(Map.Key))
-			mCharacterInfo[Map.Key].CharacterInfo = Map.Value.CharacterState;
+		if(mTM_CharacterInfo.Contains(Map.Key))
+			mTM_CharacterInfo[Map.Key].CharacterInfo = Map.Value.CharacterState;
 		else
 		{
 			FCharacterInfo Info;
 			Info.CharacterInfo = Map.Value.CharacterState;
-			mCharacterInfo.Add(Map.Key, Info);
+			mTM_CharacterInfo.Add(Map.Key, Info);
 		}
 	}
 }

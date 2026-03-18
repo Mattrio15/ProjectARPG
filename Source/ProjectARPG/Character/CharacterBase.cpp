@@ -27,14 +27,14 @@ ACharacterBase::ACharacterBase()
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Player"));
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	mDodgeAfterImage = MyObject(UNiagaraComponent, "DodgeAfterImage");
-	mDodgeAfterImage->SetupAttachment(GetMesh());
-	mDodgeAfterImage->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	mNC_DodgeAffterImage = MyObject(UNiagaraComponent, "DodgeAfterImage");
+	mNC_DodgeAffterImage->SetupAttachment(GetMesh());
+	mNC_DodgeAffterImage->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	ObjectFinder(UNiagaraSystem, NS, "/Script/Niagara.NiagaraSystem'/Game/Niagara/NS_DodgeAfterImage.NS_DodgeAfterImage'");
 	if (NS.Succeeded())
-		mDodgeAfterImage->SetAsset(NS.Object);
-	mDodgeAfterImage->bAutoActivate = false;
+		mNC_DodgeAffterImage->SetAsset(NS.Object);
+	mNC_DodgeAffterImage->bAutoActivate = false;
 
 	mDodgePostProcess = MyObject(UPostProcessComponent, "DodgePostProcess");
 	mDodgePostProcess->SetupAttachment(RootComponent);
@@ -110,23 +110,23 @@ void ACharacterBase::Tick(float DeltaTime)
 
 	if (!mPDEnable) // 완벽한 회피가 불가능할 때
 	{
-		for (int32 i = 0; i < mTargetArray.Num(); ++i) // 타깃을 순회
+		for (int32 i = 0; i < mTA_Target.Num(); ++i) // 타깃을 순회
 		{
-			if (!IsValid(mTargetArray[i])) // 타깃이 유효하지 않음
+			if (!IsValid(mTA_Target[i])) // 타깃이 유효하지 않음
 			{
-				mTargetArray.RemoveAtSwap(i); // 배열에서 타깃을 지움
+				mTA_Target.RemoveAtSwap(i); // 배열에서 타깃을 지움
 				i = -1; // 지웠으니 다시 확인
 				continue;
 			}
 			if (!mTarget.IsValid()) // 주 타깃이 유효하지 않다면 <- TWeakObjectPtr을 사용했으므로 .IsValid()
 			{
-				mTarget = mTargetArray[i]; // 타깃 재설정
+				mTarget = mTA_Target[i]; // 타깃 재설정
 				continue;
 			}
 
 			// 타깃과의 거리가 다른 타깃(몬스터들)보다 거리가 멀다면, 주 타깃 갱신
-			if ((mTarget->GetActorLocation() - GetActorLocation()).Length() > (mTargetArray[i]->GetActorLocation() - GetActorLocation()).Length())
-				mTarget = mTargetArray[i];
+			if ((mTarget->GetActorLocation() - GetActorLocation()).Length() > (mTA_Target[i]->GetActorLocation() - GetActorLocation()).Length())
+				mTarget = mTA_Target[i];
 		}
 	}
 
@@ -517,8 +517,8 @@ void ACharacterBase::SetDirYawChange(float DirYaw)
 
 void ACharacterBase::SetTargeting(AActor* Target)
 {
-	if (!mTargetArray.Contains(Target))
-		mTargetArray.Add(Target);
+	if (!mTA_Target.Contains(Target))
+		mTA_Target.Add(Target);
 }
 
 void ACharacterBase::ShowUI(bool A)

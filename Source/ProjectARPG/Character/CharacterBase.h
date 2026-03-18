@@ -53,7 +53,7 @@ protected:
 	FTimerHandle mPDFail;									  // 완벽한 회피 실패 시 타이머
 															  
 	UPROPERTY()												  
-	TObjectPtr<UNiagaraComponent> mDodgeAfterImage;			  // 완벽한 회피용 나이아가라
+	TObjectPtr<UNiagaraComponent> mNC_DodgeAffterImage;		  // 완벽한 회피용 나이아가라
 	UPROPERTY(VisibleAnywhere)								  
 	TObjectPtr<UPostProcessComponent> mDodgePostProcess;	  // 완벽한 회피용 포스트 프로세스
 	bool mDPPEnable = false;								  // 완벽한 회피용 포스트 프로세스 사용 가능 여부
@@ -65,7 +65,7 @@ protected:
 	bool mUltimateDilation = false;							  // 궁극기 슬로우모션 여부
 	bool mUltimateEnable = true;							  // 궁극기 사용 가능 여부
 															  
-	TArray<AActor*> mTargetArray;							  // 타깃(몬스터) 배열
+	TArray<AActor*> mTA_Target;								  // 타깃(몬스터) 배열
 	UPROPERTY()												  
 	TWeakObjectPtr<AActor> mTarget;							  // 타깃(몬스터)
 															  
@@ -161,7 +161,7 @@ public:
 	float GetDirYaw() { return mDirScene->GetRelativeRotation().Yaw; }	  // 바라보는 방향의 Yaw값 가져오기
 	FName GetCharacterName() { return mName; }							  // 캐릭터 이름 가져오기
 	UPostProcessComponent* GetDPP() { return mDodgePostProcess; }		  // 완벽한 회피 용 포스트 프로세스 가져오기
-	UNiagaraComponent* GetDAI() { return mDodgeAfterImage; }			  // 완벽한 회피 용 나이아가라 가져오기
+	UNiagaraComponent* GetDAI() { return mNC_DodgeAffterImage; }			  // 완벽한 회피 용 나이아가라 가져오기
 	FRotator GetCameraRotation() { return mArm->GetRelativeRotation(); }  // 카메라 회전 각도 가져오기
 
 public:

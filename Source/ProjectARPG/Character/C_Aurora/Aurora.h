@@ -26,7 +26,7 @@ protected:
 	TArray<int32> mUArray; // 궁극기 배열
 
 	UPROPERTY()
-	TObjectPtr<UNiagaraComponent> mUltimateEffect; // 궁극기 용 나이아가라 컴포넌트
+	TObjectPtr<UNiagaraComponent> mNC_Ultimate; // 궁극기 용 나이아가라 컴포넌트
 	UPROPERTY()
 	TSubclassOf<UGameplayAbility> mGA_Skill_Aurora; // 스킬 용 GA
 	UPROPERTY()
@@ -39,7 +39,7 @@ protected:
 	TObjectPtr<USoundBase> mSB_SkillHit; // 스킬 타격 소리
 
 	UPROPERTY()
-	TObjectPtr<UParticleSystem> mUltimateParticle; // 궁극기 파티클
+	TObjectPtr<UParticleSystem> mPS_Ultimate; // 궁극기 파티클
 
 	UPROPERTY()
 	TObjectPtr<UNiagaraSystem> mNS_Attack; // 공격 용 나이아가라 시스템

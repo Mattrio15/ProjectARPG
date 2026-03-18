@@ -20,15 +20,15 @@ AAurora::AAurora()
 	if (AnimAsset.Succeeded())
 		GetMesh()->SetAnimClass(AnimAsset.Class);
 
-	mUltimateEffect = MyObject(UNiagaraComponent, "UltimateEffect");
+	mNC_Ultimate = MyObject(UNiagaraComponent, "UltimateEffect");
 
 	ObjectFinder(UNiagaraSystem, EffectAsset, "/Script/Niagara.NiagaraSystem'/Game/Character/Aurora/NS_Aurora_Ultimate.NS_Aurora_Ultimate'");
 	if (EffectAsset.Succeeded())
-		mUltimateEffect->SetAsset(EffectAsset.Object);
+		mNC_Ultimate->SetAsset(EffectAsset.Object);
 
-	mUltimateEffect->SetupAttachment(GetMesh(), TEXT("Sword_Tip"));
-	mUltimateEffect->SetRelativeScale3D(FVector(5));
-	mUltimateEffect->bAutoActivate = false;
+	mNC_Ultimate->SetupAttachment(GetMesh(), TEXT("Sword_Tip"));
+	mNC_Ultimate->SetRelativeScale3D(FVector(5));
+	mNC_Ultimate->bAutoActivate = false;
 
 	mName = TEXT("Aurora");
 		
@@ -46,7 +46,7 @@ AAurora::AAurora()
 
 	ObjectFinder(UParticleSystem, PS, "/Script/Engine.ParticleSystem'/Game/ParagonAurora/FX/Particles/Abilities/Leap/FX/P_Aurora_Decoy_Frost.P_Aurora_Decoy_Frost'");
 	if (PS.Succeeded())
-		mUltimateParticle = PS.Object;
+		mPS_Ultimate = PS.Object;
 
 	mDisappearAnim = SoftPath(UAnimationAsset, "/Script/Engine.AnimSequence'/Game/ParagonAurora/Characters/Heroes/Aurora/Animations/Jog_Bwd.Jog_Bwd'");
 
@@ -100,8 +100,8 @@ void AAurora::Tick(float DeltaTime)
 				FVector RandVec = UKismetMathLibrary::GreaterGreater_VectorRotator(FVector(500, 0, 0), Rot) + GetActorLocation(); // ƒ≥∏Ø≈Õ ±‚¡ÿ ∫§≈Õ »∏¿¸
 				FHitResult Result;
 				GetWorld()->LineTraceSingleByChannel(Result, RandVec + FVector(0, 0, 10000), RandVec - FVector(0, 0, 10000), ECollisionChannel::ECC_Camera); // ∂Û¿Œ ∆Æ∑π¿ÃΩ∫ -> πŸ¥⁄ √£±‚
-				if (IsValid(mUltimateParticle)) // ±√±ÿ±‚ ¿Ã∆Â∆Æ
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), mUltimateParticle, Result.Location, FRotator::ZeroRotator, FVector(3));
+				if (IsValid(mPS_Ultimate)) // ±√±ÿ±‚ ¿Ã∆Â∆Æ
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), mPS_Ultimate, Result.Location, FRotator::ZeroRotator, FVector(3));
 				mUCount += 1;
 
 				TArray<FHitResult> Results;
@@ -137,7 +137,7 @@ void AAurora::Ultimate()
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.25); // ΩΩ∑ŒøÏ ∏º«
 	GetWorld()->GetTimerManager().SetTimer(mUltimateTimer, this, &AAurora::FinishUltimateDilation, 1); // 1√  »ƒ ΩΩ∑ŒøÏ∏º« ¡æ∑·
 
-	mUltimateEffect->Activate(false); // ±√±ÿ±‚ ¿Ã∆Â∆Æ Ω√¿€
+	mNC_Ultimate->Activate(false); // ±√±ÿ±‚ ¿Ã∆Â∆Æ Ω√¿€
 	mUltimateDilation = true; // ±√±ÿ±‚ ΩΩ∑ŒøÏ ∏º«
 
 	mUCount = 0; // ±√±ÿ±‚ ƒ´øÓ∆Æ -> 8 πÊ«‚
@@ -307,7 +307,7 @@ void AAurora::FinishUltimateDilation()
 	mArm->TargetArmLength = mArmLength;
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
 
-	mUltimateEffect->Deactivate();
+	mNC_Ultimate->Deactivate();
 
 	mUltimateDilation = false;
 

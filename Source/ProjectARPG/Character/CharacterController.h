@@ -44,18 +44,18 @@ protected:
 	TObjectPtr<ACharacterBase> mCurrentCharacter; // 현재 사용하고 있는 캐릭터
 
 	UPROPERTY()
-	TObjectPtr<UNiagaraSystem> mCounterAttackEffect; // 캐릭터 베이스에서 넘어옴 / 패링 지원 용 나이아가라 이펙트
+	TObjectPtr<UNiagaraSystem> mNS_CounterAttack; // 캐릭터 베이스에서 넘어옴 / 패링 지원 용 나이아가라 이펙트
 	
 	UPROPERTY()
-	TObjectPtr<USoundBase> mCounterSound; // 패링 지원 용 사운드
+	TObjectPtr<USoundBase> mSB_Counter; // 패링 지원 용 사운드
 
 	UPROPERTY()
 	TSubclassOf<UCameraShakeBase> mCounterCameraShake; // 패링 지원 용 카메라 쉐이크
 
 	UPROPERTY()
-	UDataTable* mCharacterClassInfoTable;
+	TObjectPtr<UDataTable> mDT_CharacterClassInfo;
 
-	TArray<FCharacterClassInfo*> mCharacterClassInfoArray;
+	TArray<FCharacterClassInfo*> mTA_CharacterClassInfo;
 
 protected:
 	virtual void BeginPlay() override;

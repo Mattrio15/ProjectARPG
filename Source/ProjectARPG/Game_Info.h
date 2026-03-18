@@ -17,6 +17,25 @@
 
 #include "Components/WidgetComponent.h"
 
+/*
+* TM : TMap
+* TA : TArray
+* 
+* DA : Data Asset
+* DT : Data Table
+* 
+* AS : Attribute Set
+* GA : Gameplay Ability
+* GE : Gameplay Effect
+* GT : Gameplay Tag
+* 
+* NC : Niagara Component
+* NS : Niagara System
+* PS : Particle System
+* SB : Sound Base
+* 
+*/ 
+
 #define MyObject(Object, Name) CreateDefaultSubobject<Object>(TEXT(Name))
 #define ObjectFinder(Object, Name, Path) static ConstructorHelpers::FObjectFinder<Object> Name(TEXT(Path));
 #define ClassFinder(Object, Name, Path) static ConstructorHelpers::FClassFinder<Object> Name(TEXT(Path));

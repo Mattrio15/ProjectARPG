@@ -17,11 +17,11 @@ ACharacterController::ACharacterController()
 {
 	ObjectFinder(UNiagaraSystem, NS, "/Script/Niagara.NiagaraSystem'/Game/Niagara/NS_Wave.NS_Wave'");
 	if (NS.Succeeded())
-		mCounterAttackEffect = NS.Object;
+		mNS_CounterAttack = NS.Object;
 
 	ObjectFinder(USoundBase, SB, "/Script/Engine.SoundWave'/Game/Sound/SW_Counter.SW_Counter'");
 	if (SB.Succeeded())
-		mCounterSound = SB.Object;
+		mSB_Counter = SB.Object;
 
 	ClassFinder(UCameraShakeBase, CSB, "/Script/Engine.Blueprint'/Game/CameraShake/BC_CounterChange.BC_CounterChange_C'");
 	if (CSB.Succeeded())
@@ -29,7 +29,7 @@ ACharacterController::ACharacterController()
 
 	ObjectFinder(UDataTable, DT, "/Script/Engine.DataTable'/Game/Character/DT_CharacterClass.DT_CharacterClass'");
 	if (DT.Succeeded())
-		mCharacterClassInfoTable = DT.Object;
+		mDT_CharacterClassInfo = DT.Object;
 }
 
 void ACharacterController::BeginPlay()
@@ -40,8 +40,8 @@ void ACharacterController::BeginPlay()
 
 	GetWorld()->GetTimerManager().SetTimer(mSpawnTimer, this, &ACharacterController::SpawnCharacter, 0.1, false);
 
-	if (IsValid(mCharacterClassInfoTable))
-		mCharacterClassInfoTable->GetAllRows<FCharacterClassInfo>(TEXT(""), mCharacterClassInfoArray);
+	if (IsValid(mDT_CharacterClassInfo))
+		mDT_CharacterClassInfo->GetAllRows<FCharacterClassInfo>(TEXT(""), mTA_CharacterClassInfo);
 
 }
 
@@ -59,10 +59,10 @@ void ACharacterController::SpawnCharacter()
 	if (IsValid(CS))
 		CS->SetSaveGameData(SD); // 캐릭터 스테이트에 저장
 
-	if (!IsValid(mCharacterClassInfoTable))
+	if (!IsValid(mDT_CharacterClassInfo))
 		return;
 
-	FCharacterClassInfo* CCI = mCharacterClassInfoTable->FindRow<FCharacterClassInfo>(SD.CharacterName, TEXT(""));
+	FCharacterClassInfo* CCI = mDT_CharacterClassInfo->FindRow<FCharacterClassInfo>(SD.CharacterName, TEXT(""));
 	if (!CCI)
 		return;
 
@@ -86,8 +86,8 @@ void ACharacterController::SpawnCharacter()
 void ACharacterController::CharacterChange(FVector Postion, FRotator CameraRotation, float DirYaw)
 {
 	mCharacterIndex += 1;
-	mCharacterIndex %= mCharacterClassInfoArray.Num();
-	FCharacterClassInfo* CCI = mCharacterClassInfoArray[mCharacterIndex];
+	mCharacterIndex %= mTA_CharacterClassInfo.Num();
+	FCharacterClassInfo* CCI = mTA_CharacterClassInfo[mCharacterIndex];
 	if (!CCI || !IsValid(CCI->CharacterClass))
 		return;
 
@@ -120,10 +120,10 @@ void ACharacterController::CharacterChange(FVector Postion, FRotator CameraRotat
 
 		mCurrentCharacter->CounterChange(); // 캐릭터 패링 지원
 
-		if (IsValid(mCounterAttackEffect)) // 패링 지원 이펙트
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), mCounterAttackEffect, mCurrentCharacter->GetActorLocation());
+		if (IsValid(mNS_CounterAttack)) // 패링 지원 이펙트
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), mNS_CounterAttack, mCurrentCharacter->GetActorLocation());
 
-		if (IsValid(mCounterSound)) // 패링 지원 사운드
-			UGameplayStatics::PlaySound2D(GetWorld(), mCounterSound);
+		if (IsValid(mSB_Counter)) // 패링 지원 사운드
+			UGameplayStatics::PlaySound2D(GetWorld(), mSB_Counter);
 	}
 }
