@@ -80,7 +80,7 @@ public:
 	void SetIsHit(bool A);
 
 	void Death(FVector Pos);
-	void SetElementalTexture();
+	void SetElemental(FGameplayTag Tag);
 
 	void PlayKnockback(FVector Start);
 

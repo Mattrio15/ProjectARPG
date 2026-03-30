@@ -193,8 +193,17 @@ void AMonsterBase::Death(FVector Pos)
 	GetWorld()->GetTimerManager().SetTimer(mDissolveTimer, this, &AMonsterBase::Dissolve, 0.01, true);
 }
 
-void AMonsterBase::SetElementalTexture()
+void AMonsterBase::SetElemental(FGameplayTag Tag)
 {
+	mASC->RemoveLooseGameplayTag(mADA->mElemental_IceTag);
+	mASC->RemoveLooseGameplayTag(mADA->mElemental_DarkTag);
+	mASC->RemoveLooseGameplayTag(mADA->mElemental_ElectricTag);
+	mASC->RemoveLooseGameplayTag(mADA->mElemental_BleedTag);
+	mASC->RemoveLooseGameplayTag(mADA->mElemental_LightTag);
+	mASC->RemoveLooseGameplayTag(mADA->mElemental_FireTag);
+
+	mASC->AddLooseGameplayTag(Tag);
+
 	UMonsterHPWidget* MonsterWidget = Cast<UMonsterHPWidget>(mMonsterHPWidget->GetWidget());
 	if (IsValid(MonsterWidget))
 	{

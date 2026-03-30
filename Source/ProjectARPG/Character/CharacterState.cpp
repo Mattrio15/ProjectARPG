@@ -53,19 +53,26 @@ ACharacterState::ACharacterState()
 
 	ClassFinder(UGameplayAbility, GA_Dodge, "/Script/Engine.Blueprint'/Game/GAS/GameplayAbility/Character/GA_Dodge.GA_Dodge_C'");
 	if (GA_Dodge.Succeeded())
-		mGA_Dodge = GA_Dodge.Class;
+		mGA_DodgeClass = GA_Dodge.Class;
 
-}
+	ClassFinder(UGameplayEffect, GE_HPRegen, "/Script/Engine.Blueprint'/Game/GAS/GameplayEffect/Character/GE_Mana.GE_Mana_C'");
+	if (GE_HPRegen.Succeeded())
+		mGE_HPRegenClass = GE_HPRegen.Class;
 
-UAbilitySystemComponent* ACharacterState::GetAbilitySystemComponent() const
-{
-	return mASC;
 }
 
 void ACharacterState::BeginPlay()
 {
 	Super::BeginPlay();
 
+	InitWidget();
+	InitLevelSequence();
+	InitCharacterGE();
+
+}
+
+void ACharacterState::InitWidget()
+{
 	if (IsValid(mMainWidgetClass))
 	{
 		mMainWidget = CreateWidget<UUserWidget>(GetWorld(), mMainWidgetClass);
@@ -94,11 +101,14 @@ void ACharacterState::BeginPlay()
 			SetCharacterFace();
 		}
 	}
+}
 
+void ACharacterState::InitLevelSequence()
+{
 	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
 	if (!IsValid(GI))
 		return;
-	
+
 	if (!GI->GetIsNewGame())
 	{
 		ULevelSequence* LS = LoadObject<ULevelSequence>(GetWorld(), TEXT("/Script/LevelSequence.LevelSequence'/Game/LevelSequence/LS_Start.LS_Start'"));
@@ -112,14 +122,14 @@ void ACharacterState::BeginPlay()
 			{
 				FInputModeUIOnly Mode;
 				GetPlayerController()->SetInputMode(Mode);
-				
+
 				ShowMainWidget(false);
 				LSP->Play();
 				FQualifiedFrameTime Duration = LSP->GetDuration();
 				FTimerHandle Timer;
 				TWeakObjectPtr<ACharacterState> WeakThis(this);
-				GetWorld()->GetTimerManager().SetTimer(Timer, 
-					[WeakThis]() 
+				GetWorld()->GetTimerManager().SetTimer(Timer,
+					[WeakThis]()
 					{
 						if (WeakThis.IsValid())
 						{
@@ -138,7 +148,10 @@ void ACharacterState::BeginPlay()
 
 		}
 	}
+}
 
+void ACharacterState::InitCharacterGE()
+{
 	if (IsValid(mDT_CharacterGE))
 	{
 		TArray<FName> TA_Name = mDT_CharacterGE->GetRowNames();
@@ -152,65 +165,78 @@ void ACharacterState::BeginPlay()
 			}
 		}
 	}
-
-}
-
-void ACharacterState::SetElemental(UAbilitySystemComponent* ASC, FGameplayTag Tag)
-{
-	ASC->RemoveLooseGameplayTag(mDA_AttributeTag->mElemental_IceTag);
-	ASC->RemoveLooseGameplayTag(mDA_AttributeTag->mElemental_DarkTag);
-	ASC->RemoveLooseGameplayTag(mDA_AttributeTag->mElemental_ElectricTag);
-	ASC->RemoveLooseGameplayTag(mDA_AttributeTag->mElemental_BleedTag);
-	ASC->RemoveLooseGameplayTag(mDA_AttributeTag->mElemental_LightTag);
-	ASC->RemoveLooseGameplayTag(mDA_AttributeTag->mElemental_FireTag);
-
-	ASC->AddLooseGameplayTag(Tag);
-
-	AMonsterBase* Monster = Cast<AMonsterBase>(ASC->GetAvatarActor());
-	if (IsValid(Monster))
-		Monster->SetElementalTexture();
 }
 
 void ACharacterState::InitAbilitySystemComponent(AActor* Avatar)
 {
-	if (!IsValid(mASC))
+	if (!IsValid(mASC)) // ASC 확인
 	{
 		Log(TEXT("Ability System Component Is InValid"));
 		return;
 	}
-	mASC->InitAbilityActorInfo(this, Avatar);
+	mASC->InitAbilityActorInfo(this, Avatar); // ASC의 아바타 액터 설정
 
-	FCharacterInfo* InfoPtr = mDT_CharacterInfo->FindRow<FCharacterInfo>(mCharacterName, TEXT(""));
+	SetTMCharacterGE(); // 맵에 캐릭터 정보 저장
+
+	SetCharacterMoveSpeed(); // 캐릭터 이동속도 설정
+
+	ApplyGE_Init(); // GE_Init 실행
+
+	ApplyCharacterGA(); // GA 부여
+
+	SetCharacterFace(); // 캐릭터 초상화 설정
+}
+
+void ACharacterState::SetTMCharacterGE()
+{
+	FCharacterInfo* InfoPtr = mDT_CharacterInfo->FindRow<FCharacterInfo>(mCharacterName, TEXT("")); // 캐릭터 정보 가져오기
 	if (!InfoPtr)
 		return;
 
-	if (!mTM_CharacterInfo.Contains(mCharacterName))
+	if (!mTM_CharacterInfo.Contains(mCharacterName)) // 캐릭터 정보를 맵에 저장
 		mTM_CharacterInfo.Add(mCharacterName, *InfoPtr);
-	
-	mTM_CharacterInfo[mCharacterName].CharacterFace = InfoPtr->CharacterFace;
-	FCharacterInfo Info = mTM_CharacterInfo[mCharacterName];
 
-	ACharacterBase* CB = Cast<ACharacterBase>(Avatar);
-	if (Info.CharacterInfo.Contains(mDA_AttributeTag->mMoveSpeedTag))
-		CB->GetCharacterMovement()->MaxWalkSpeed = Info.CharacterInfo[mDA_AttributeTag->mMoveSpeedTag];
-	else
-		Test(TEXT("Empty!"));
+	mTM_CharacterInfo[mCharacterName].CharacterFace = InfoPtr->CharacterFace; // 캐릭터 초상화 저장
+}
 
-	FGameplayEffectContextHandle Context = mASC->MakeEffectContext();
+void ACharacterState::SetCharacterMoveSpeed()
+{
+	FCharacterInfo Info = mTM_CharacterInfo[mCharacterName]; // 맵에 저장되어 있는 캐릭터 정보 사용
+
+	ACharacterBase* CB = Cast<ACharacterBase>(mASC->GetAvatarActor()); // 캐릭터
+	if (IsValid(CB))
+	{
+		if (Info.CharacterInfo.Contains(mDA_AttributeTag->mMoveSpeedTag)) // 캐릭터 이동속도 조절
+			CB->GetCharacterMovement()->MaxWalkSpeed = Info.CharacterInfo[mDA_AttributeTag->mMoveSpeedTag];
+	}
+}
+
+void ACharacterState::ApplyGE_Init()
+{
+	FCharacterInfo Info = mTM_CharacterInfo[mCharacterName]; // 맵에 저장되어 있는 캐릭터 정보 사용
+
+	FGameplayEffectContextHandle Context = mASC->MakeEffectContext(); // GE 실행 용 Context
 	if (IsValid(mDA_CharacterGE->mGE_Init))
 	{
-		FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mDA_CharacterGE->mGE_Init, 1, Context);
+		FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mDA_CharacterGE->mGE_Init, 1, Context); // 캐릭터 정보 초기화 용 GE Spec
 
-		for (auto& Data : Info.CharacterInfo)
+		for (auto& Data : Info.CharacterInfo) // 캐릭터 정보와 맞게 GE에게 넘겨줌
 			Spec.Data->SetSetByCallerMagnitude(Data.Key, Data.Value);
 
-		mASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
+		mASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get()); // 캐릭터 정보를 GE로 초기화
 	}
-	else
-		Log(TEXT("GE_Init Is Invalid!"));
 
-	mASC->ClearAllAbilities();
-	if (mDA_CharacterGA->mCharacterAbilityData.Contains(mCharacterName))
+	if (IsValid(mGE_HPRegenClass)) // 체력 자동 회복 GE
+	{
+		FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mGE_HPRegenClass, 1, Context);
+		mASC->ApplyGameplayEffectSpecToSelf(*(Spec.Data.Get()));
+	}
+}
+
+void ACharacterState::ApplyCharacterGA()
+{
+	mASC->ClearAllAbilities(); // 가지고 있는 어빌리티 삭제
+	if (mDA_CharacterGA->mCharacterAbilityData.Contains(mCharacterName)) // 캐릭터가 가지고 있는 어빌리티 확인 후 부여
 	{
 		for (auto& Ability : mDA_CharacterGA->mCharacterAbilityData[mCharacterName].CharacterAbility)
 		{
@@ -222,17 +248,8 @@ void ACharacterState::InitAbilitySystemComponent(AActor* Avatar)
 		}
 	}
 
-	FGameplayAbilitySpec DodgeSpec = FGameplayAbilitySpec(mGA_Dodge);
-	mASC->GiveAbility(mGA_Dodge);
-
-	TSubclassOf<UGameplayEffect> HPRegen = LoadClass<UGameplayEffect>(GetWorld(), TEXT("/Script/Engine.Blueprint'/Game/GAS/GameplayEffect/Character/GE_HealthRegen.GE_HealthRegen_C'"));
-	if (IsValid(HPRegen))
-	{
-		FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(HPRegen, 1, Context);
-		mASC->ApplyGameplayEffectSpecToSelf(*(Spec.Data.Get()));
-	}
-
-	SetCharacterFace();
+	FGameplayAbilitySpec DodgeSpec = FGameplayAbilitySpec(mGA_DodgeClass); // 회피 어빌리티 부여
+	mASC->GiveAbility(mGA_DodgeClass);
 }
 
 void ACharacterState::SaveCharacterInfo()
@@ -276,19 +293,6 @@ void ACharacterState::SaveCharacterInfo()
 
 void ACharacterState::PlayGE_Attack(FName Name, UAbilitySystemComponent* ASC)
 {
-	// if (mDA_CharacterGE->mGE_Attack.Contains(Name))
-	// {
-	// 	if (IsValid(mDA_CharacterGE->mGE_Attack[Name]))
-	// 	{
-	// 		FGameplayEffectContextHandle Context = mASC->MakeEffectContext();
-	// 		FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mDA_CharacterGE->mGE_Attack[Name], 1, Context);
-	// 		mASC->ApplyGameplayEffectSpecToTarget(*Spec.Data.Get(), ASC);
-	// 	}
-	// }
-	// if (mDA_CharacterGE->mGE_Elemental_Tag.Contains(Name))
-	// 	if (!ASC->HasMatchingGameplayTag(mDA_CharacterGE->mGE_Elemental_Tag[Name]))
-	// 		SetElemental(ASC, mDA_CharacterGE->mGE_Elemental_Tag[Name]);
-
 	FCharacterGE* CharacterGE = mTM_CharacterGE.Find(Name);
 	if (CharacterGE)
 	{
@@ -301,7 +305,11 @@ void ACharacterState::PlayGE_Attack(FName Name, UAbilitySystemComponent* ASC)
 		}
 		FGameplayTag GT = CharacterGE->GT_Elemental;
 		if (!ASC->HasMatchingGameplayTag(GT))
-			SetElemental(ASC, GT);
+		{
+			AMonsterBase* Monster = Cast<AMonsterBase>(ASC->GetAvatarActor());
+			if (IsValid(Monster))
+				Monster->SetElemental(GT);
+		}
 	}
 
 	TSubclassOf<UGameplayEffect> Mana = LoadClass<UGameplayEffect>(GetWorld(), TEXT("/Script/Engine.Blueprint'/Game/GAS/GameplayEffect/Character/GE_Mana.GE_Mana_C'"));
@@ -327,7 +335,11 @@ void ACharacterState::PlayGE_CounterAttack(FName Name, UAbilitySystemComponent* 
 
 	if (mDA_CharacterGE->mGE_Elemental_Tag.Contains(Name))
 		if (!ASC->HasMatchingGameplayTag(mDA_CharacterGE->mGE_Elemental_Tag[Name]))
-			SetElemental(ASC, mDA_CharacterGE->mGE_Elemental_Tag[Name]);
+		{
+			AMonsterBase* Monster = Cast<AMonsterBase>(ASC->GetAvatarActor());
+			if (IsValid(Monster))
+				Monster->SetElemental(mDA_CharacterGE->mGE_Elemental_Tag[Name]);
+		}
 
 }
 
@@ -343,14 +355,20 @@ void ACharacterState::PlayGE_Skill(FName Name, UAbilitySystemComponent* ASC)
 		}
 	}
 	if (mDA_CharacterGE->mGE_Elemental_Tag.Contains(Name))
+	{
 		if (!ASC->HasMatchingGameplayTag(mDA_CharacterGE->mGE_Elemental_Tag[Name]))
-			SetElemental(ASC, mDA_CharacterGE->mGE_Elemental_Tag[Name]);
+		{
+			AMonsterBase* Monster = Cast<AMonsterBase>(ASC->GetAvatarActor());
+			if (IsValid(Monster))
+				Monster->SetElemental(mDA_CharacterGE->mGE_Elemental_Tag[Name]);
+		}
+	}
 
 }
 
 bool ACharacterState::PlayGA_Dodge()
 {
-	return mASC->TryActivateAbilityByClass(mGA_Dodge);
+	return mASC->TryActivateAbilityByClass(mGA_DodgeClass);
 }
 
 void ACharacterState::ShowMainWidget(bool A)

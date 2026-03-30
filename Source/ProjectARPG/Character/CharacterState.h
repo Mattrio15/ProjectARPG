@@ -86,22 +86,37 @@ protected:
 	TObjectPtr<UItemComponent> mItemComponent; // 아이템 컴포넌트
 	
 	UPROPERTY()
-	TSubclassOf<UGameplayAbility> mGA_Dodge; // 회피 GA
+	TSubclassOf<UGameplayAbility> mGA_DodgeClass; // 회피 GA
+
+	UPROPERTY()
+	TSubclassOf<UGameplayEffect> mGE_HPRegenClass; // 체력 회복 GE
 
 	UPROPERTY()
 	TObjectPtr<UMiniGameWidget> mMiniGameWidget; // 미니게임 위젯
 
 public:
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const; // 어빌리티 시스템
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const { return mASC; }
 
 protected:
 	virtual void BeginPlay();
+
+	void InitWidget(); // 위젯 초기화 함수
+	void InitLevelSequence(); // 레벨 시퀀스 초기화 함수
+	void InitCharacterGE(); // 캐릭터 GE 초기화 함수
 
 protected:
 	void SetElemental(UAbilitySystemComponent* ASC, FGameplayTag Tag); // 몬스터의 속성 효과 설정
 
 public:
 	void InitAbilitySystemComponent(AActor* Avatar); // ASC 초기화
+
+protected:
+	void SetTMCharacterGE(); // 캐릭터 GE 맵 설정 함수
+	void SetCharacterMoveSpeed(); // 캐릭터 이동속도 설정 함수
+	void ApplyGE_Init(); // 초기화 GE 적용 함수
+	void ApplyCharacterGA(); // 캐릭터 GA 적용 함수
+
+public:
 	void SaveCharacterInfo(); // 캐릭터 정보 저장
 
 	void PlayGE_Attack(FName Name, UAbilitySystemComponent* ASC); // 공격 용 GE 실행 함수
