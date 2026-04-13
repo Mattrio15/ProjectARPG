@@ -59,6 +59,10 @@ ACharacterState::ACharacterState()
 	if (GE_HPRegen.Succeeded())
 		mGE_HPRegenClass = GE_HPRegen.Class;
 
+	ClassFinder(UGameplayEffect, GE_Mana, "/Script/Engine.Blueprint'/Game/GAS/GameplayEffect/Character/GE_Mana.GE_Mana_C'");
+	if (GE_Mana.Succeeded())
+		mGE_ManaClass = GE_Mana.Class;
+
 }
 
 void ACharacterState::BeginPlay()
@@ -291,78 +295,73 @@ void ACharacterState::SaveCharacterInfo()
 
 }
 
+FGameplayEffectSpecHandle ACharacterState::GetGameplayEffectSpecHandle(TSubclassOf<UGameplayEffect> GEClass)
+{
+	if (!IsValid(mASC) || !IsValid(GEClass)) // ASC와 GE 클래스 확인
+		return FGameplayEffectSpecHandle(); // 빈 Spec 반환
+
+	FGameplayEffectContextHandle Context = mASC->MakeEffectContext();
+	FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(GEClass, 1, Context);
+	return Spec;
+}
+
+void ACharacterState::PlayGameplayEffect(TSubclassOf<UGameplayEffect> GEClass, FGameplayTag GT_Elemental, UAbilitySystemComponent* ASC)
+{
+	if (!IsValid(ASC))
+		return;
+
+	FGameplayEffectSpecHandle Spec = GetGameplayEffectSpecHandle(GEClass); // Spec 가져오기
+	if (Spec.IsValid())
+		mASC->ApplyGameplayEffectSpecToTarget(*(Spec.Data.Get()), ASC); // 적용
+
+	if (GT_Elemental.IsValid() && !ASC->HasMatchingGameplayTag(GT_Elemental)) // GT 유효성과 보유성 확인
+	{
+		AMonsterBase* Monster = Cast<AMonsterBase>(ASC->GetAvatarActor());
+		if (IsValid(Monster))
+			Monster->SetElemental(GT_Elemental);
+	}
+}
+
 void ACharacterState::PlayGE_Attack(FName Name, UAbilitySystemComponent* ASC)
 {
-	FCharacterGE* CharacterGE = mTM_CharacterGE.Find(Name);
-	if (CharacterGE)
-	{
-		TSubclassOf<UGameplayEffect> GE_Attack = CharacterGE->GE_Attack;
-		if (IsValid(GE_Attack))
-		{
-			FGameplayEffectContextHandle Context = mASC->MakeEffectContext();
-			FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(GE_Attack, 1, Context);
-			mASC->ApplyGameplayEffectSpecToTarget(*Spec.Data.Get(), ASC);
-		}
-		FGameplayTag GT = CharacterGE->GT_Elemental;
-		if (!ASC->HasMatchingGameplayTag(GT))
-		{
-			AMonsterBase* Monster = Cast<AMonsterBase>(ASC->GetAvatarActor());
-			if (IsValid(Monster))
-				Monster->SetElemental(GT);
-		}
-	}
+	FCharacterGE* CharacterGE = mTM_CharacterGE.Find(Name); // 캐릭터 이름으로 GE 가져오기
+	if (!CharacterGE)
+		return;
 
-	TSubclassOf<UGameplayEffect> Mana = LoadClass<UGameplayEffect>(GetWorld(), TEXT("/Script/Engine.Blueprint'/Game/GAS/GameplayEffect/Character/GE_Mana.GE_Mana_C'"));
-	if (IsValid(Mana))
-	{
-		FGameplayEffectContextHandle Context = mASC->MakeEffectContext();
-		FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(Mana, 1, Context);
-		mASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
-	}
+	TSubclassOf<UGameplayEffect> GE_Attack = CharacterGE->GE_Attack; // 공격 이펙트 가져오기
+	FGameplayTag GT = CharacterGE->GT_Elemental;
+
+	PlayGameplayEffect(GE_Attack, GT, ASC); // 이펙트 실행
+
+	FGameplayEffectSpecHandle ManaSpec = GetGameplayEffectSpecHandle(mGE_ManaClass); // 마나 GE Spec
+	if (ManaSpec.IsValid())
+		mASC->ApplyGameplayEffectSpecToSelf(*(ManaSpec.Data.Get()));
+
 }
 
 void ACharacterState::PlayGE_CounterAttack(FName Name, UAbilitySystemComponent* ASC)
 {
-	if (mDA_CharacterGE->mGE_CounterAttack.Contains(Name))
-	{
-		if (IsValid(mDA_CharacterGE->mGE_CounterAttack[Name]))
-		{
-			FGameplayEffectContextHandle Context = mASC->MakeEffectContext();
-			FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mDA_CharacterGE->mGE_CounterAttack[Name], 1, Context);
-			mASC->ApplyGameplayEffectSpecToTarget(*Spec.Data.Get(), ASC);
-		}
-	}
+	FCharacterGE* CharacterGE = mTM_CharacterGE.Find(Name);
+	if (!CharacterGE)
+		return;
 
-	if (mDA_CharacterGE->mGE_Elemental_Tag.Contains(Name))
-		if (!ASC->HasMatchingGameplayTag(mDA_CharacterGE->mGE_Elemental_Tag[Name]))
-		{
-			AMonsterBase* Monster = Cast<AMonsterBase>(ASC->GetAvatarActor());
-			if (IsValid(Monster))
-				Monster->SetElemental(mDA_CharacterGE->mGE_Elemental_Tag[Name]);
-		}
+	TSubclassOf<UGameplayEffect> GE_Counter = CharacterGE->GE_CounterAttack;
+	FGameplayTag GT = CharacterGE->GT_Elemental;
+
+	PlayGameplayEffect(GE_Counter, GT, ASC);
 
 }
 
 void ACharacterState::PlayGE_Skill(FName Name, UAbilitySystemComponent* ASC)
 {
-	if (mDA_CharacterGE->mGE_Skill.Contains(Name))
-	{
-		if (IsValid(mDA_CharacterGE->mGE_Skill[Name]))
-		{
-			FGameplayEffectContextHandle Context = mASC->MakeEffectContext();
-			FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mDA_CharacterGE->mGE_Skill[Name], 1, Context);
-			mASC->ApplyGameplayEffectSpecToTarget(*Spec.Data.Get(), ASC);
-		}
-	}
-	if (mDA_CharacterGE->mGE_Elemental_Tag.Contains(Name))
-	{
-		if (!ASC->HasMatchingGameplayTag(mDA_CharacterGE->mGE_Elemental_Tag[Name]))
-		{
-			AMonsterBase* Monster = Cast<AMonsterBase>(ASC->GetAvatarActor());
-			if (IsValid(Monster))
-				Monster->SetElemental(mDA_CharacterGE->mGE_Elemental_Tag[Name]);
-		}
-	}
+	FCharacterGE* CharacterGE = mTM_CharacterGE.Find(Name);
+	if (!CharacterGE)
+		return;
+
+	TSubclassOf<UGameplayEffect> GE_Skill = CharacterGE->GE_Skill;
+	FGameplayTag GT = CharacterGE->GT_Elemental;
+
+	PlayGameplayEffect(GE_Skill, GT, ASC);
 
 }
 

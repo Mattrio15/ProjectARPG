@@ -65,7 +65,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UDA_CharacterGE> mDA_CharacterGE; // 캐릭터가 사용할 GE 데이터 애셋
 	UPROPERTY()
-	TObjectPtr<UDataTable> mDT_CharacterGE; // 캐릭터가 사용할 GE 데이터 애셋
+	TObjectPtr<UDataTable> mDT_CharacterGE; // 캐릭터가 사용할 GE 데이터 테이블
 	UPROPERTY()
 	TMap<FName, FCharacterGE> mTM_CharacterGE; // 캐릭터가 사용할 GE를 이름으로 찾을 맵
 	UPROPERTY()
@@ -90,6 +90,9 @@ protected:
 
 	UPROPERTY()
 	TSubclassOf<UGameplayEffect> mGE_HPRegenClass; // 체력 회복 GE
+
+	UPROPERTY()
+	TSubclassOf<UGameplayEffect> mGE_ManaClass; // 공격시 마나 회복 GE
 
 	UPROPERTY()
 	TObjectPtr<UMiniGameWidget> mMiniGameWidget; // 미니게임 위젯
@@ -119,12 +122,19 @@ protected:
 public:
 	void SaveCharacterInfo(); // 캐릭터 정보 저장
 
+protected:
+	FGameplayEffectSpecHandle GetGameplayEffectSpecHandle(TSubclassOf<UGameplayEffect> GEClass);
+	void PlayGameplayEffect(TSubclassOf<UGameplayEffect> GEClass, FGameplayTag GT_Elemental, UAbilitySystemComponent* ASC);
+
+public:
 	void PlayGE_Attack(FName Name, UAbilitySystemComponent* ASC); // 공격 용 GE 실행 함수
 	void PlayGE_CounterAttack(FName Name, UAbilitySystemComponent* ASC); // 패링 지원 용 GE 실행 함수
 	void PlayGE_Skill(FName Name, UAbilitySystemComponent* ASC); // 스킬 용 GE 실행 함수
 
 	bool PlayGA_Dodge(); // 회피 용 GA 실행 함수
 
+
+public:
 	UFUNCTION(BlueprintCallable)
 	void ShowMainWidget(bool A); // 메인 위젯 보이기 여부
 	void ShowUI(bool A); // UI 보이기 여부
