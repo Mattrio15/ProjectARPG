@@ -4,6 +4,7 @@
 #include "MiniGameWidget.h"
 #include "Algo/RandomShuffle.h"
 #include "../../Character/CharacterState.h"
+#include "../Character/ItemDataAsset.h"
 
 void UMiniGameWidget::NativeOnInitialized()
 {
@@ -149,7 +150,7 @@ void UMiniGameWidget::SetSecondCard(UCardWidget* Card)
 			{
 				UItemDataAsset* HpPotion = LoadObject<UItemDataAsset>(GetWorld(), TEXT("/Script/ProjectARPG.ItemDataAsset'/Game/UI/Item/DA_HealthPotion.DA_HealthPotion'"));
 				UItemDataAsset* MpPotion = LoadObject<UItemDataAsset>(GetWorld(), TEXT("/Script/ProjectARPG.ItemDataAsset'/Game/UI/Item/DA_ManaPotion.DA_ManaPotion'"));
-				if (IsValid(HpPotion) && IsValid(MpPotion))
+				if (HpPotion && MpPotion)
 				{
 					for (int32 i = 0; i < 3; ++i)
 					{
@@ -161,6 +162,8 @@ void UMiniGameWidget::SetSecondCard(UCardWidget* Card)
 			ClearMiniGame();
 			mCorrectCount = 0;
 		}
+
+		PlayCorrectSound(mCorrectCount);
 	}
 	else
 	{
@@ -169,6 +172,8 @@ void UMiniGameWidget::SetSecondCard(UCardWidget* Card)
 
 		mFirstCard->SetCardTurn(false);
 		Card->SetCardTurn(false);
+
+		PlayNotCorrectSound();
 	}
 
 	mFirstCard = nullptr;

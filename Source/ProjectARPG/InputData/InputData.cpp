@@ -75,4 +75,8 @@ UInputData::UInputData()
 	if (FKey.Succeeded())
 		mFKey = FKey.Object;
 
+	ObjectFinder(UInputAction, Status, "/Script/EnhancedInput.InputAction'/Game/Input/IA_Status.IA_Status'");
+	if (Status.Succeeded())
+		mStatus = Status.Object;
+
 }

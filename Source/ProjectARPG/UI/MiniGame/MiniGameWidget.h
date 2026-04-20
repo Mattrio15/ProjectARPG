@@ -56,6 +56,12 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ClearMiniGame();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayCorrectSound(int32 Index);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayNotCorrectSound();
+
 
 public:
 	UCardWidget* GetFirstCard() { return mFirstCard; }

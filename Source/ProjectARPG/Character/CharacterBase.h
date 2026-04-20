@@ -72,6 +72,8 @@ protected:
 	FName mName;											  // 캐릭터 이름
 															  
 	bool mShowUI = false;									  // UI 보이기 여부
+	bool mShowInventory = false;
+	bool mShowStatus = false;
 	bool mNPCTalking = false;								  // NPC 대화 여부
 
 	UPROPERTY()
@@ -119,6 +121,8 @@ protected:
 	void CharacterQuickSlot_3(const FInputActionInstance& Instance);	  // 퀵슬롯3
 	void CharacterPause(const FInputActionInstance& Instance);			  // 일시 정지
 	void CharacterFKey(const FInputActionInstance& Instance);			  // F키
+	void CharacterStatus(const FInputActionInstance& Instance);			  // 스텟 창
+	
 
 protected:
 	void CharacterDisappear();											  // 캐릭터 사라지기

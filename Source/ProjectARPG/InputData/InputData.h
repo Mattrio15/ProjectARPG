@@ -34,6 +34,6 @@ public:
 	UInputAction* mQuickSlot_3;
 	UInputAction* mPause;
 	UInputAction* mFKey;
-
+	UInputAction* mStatus;
 
 };

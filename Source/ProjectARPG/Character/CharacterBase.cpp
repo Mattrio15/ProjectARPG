@@ -168,6 +168,7 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Input->BindAction(ID->mQuickSlot_3, ETriggerEvent::Started, this, &ACharacterBase::CharacterQuickSlot_3);
 	Input->BindAction(ID->mPause, ETriggerEvent::Started, this, &ACharacterBase::CharacterPause);
 	Input->BindAction(ID->mFKey, ETriggerEvent::Started, this, &ACharacterBase::CharacterFKey);
+	Input->BindAction(ID->mStatus, ETriggerEvent::Started, this, &ACharacterBase::CharacterStatus);
 
 }
 
@@ -188,6 +189,8 @@ void ACharacterBase::CharacterMoveStart(const FInputActionInstance& Instance)
 	if (mShowUI) // UI가 보이고 있다면
 	{
 		mShowUI = !mShowUI; // 안보인다고 알려주기
+		mShowInventory = false;
+		mShowStatus = false;
 		ShowUI(mShowUI); // UI 숨기기
 	}
 
@@ -412,11 +415,12 @@ void ACharacterBase::CharacterUltimate(const FInputActionInstance& Instance)
 
 void ACharacterBase::CharacterInventory(const FInputActionInstance& Instance)
 {
-	mShowUI = !mShowUI;
+	mShowInventory = !mShowInventory;
+	mShowUI = mShowInventory || mShowStatus;
 	ShowUI(mShowUI);
 	ACharacterState* CS = GetPlayerState<ACharacterState>();
 	if (IsValid(CS))
-		CS->ShowInventory(mShowUI);
+		CS->ShowInventory(mShowInventory);
 }
 
 void ACharacterBase::CharacterQuickSlot_1(const FInputActionInstance& Instance)
@@ -474,6 +478,16 @@ void ACharacterBase::CharacterFKey(const FInputActionInstance& Instance)
 			CS->PlayMiniGame();
 	}
 
+}
+
+void ACharacterBase::CharacterStatus(const FInputActionInstance& Instance)
+{
+	mShowStatus = !mShowStatus;
+	mShowUI = mShowInventory || mShowStatus;
+	ShowUI(mShowUI);
+	ACharacterState* CS = GetPlayerState<ACharacterState>();
+	if (IsValid(CS))
+		CS->ShowStatus(mShowStatus);
 }
 
 void ACharacterBase::CharacterDisappear()

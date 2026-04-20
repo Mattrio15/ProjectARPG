@@ -12,6 +12,7 @@
 #include "../SaveGame/MySaveGame.h"
 #include "../UI/Character/CharacterHPWidget.h"
 #include "../UI/Character/CharacterInventory.h"
+#include "../UI/Character/CharacterInfoWidget.h"
 #include "../UI/MiniGame/MiniGameWidget.h"
 #include "../MyGameInstance.h"
 #include "LevelSequence.h"
@@ -63,6 +64,19 @@ ACharacterState::ACharacterState()
 	if (GE_Mana.Succeeded())
 		mGE_ManaClass = GE_Mana.Class;
 
+	mMainLevelBGM = MyObject(UAudioComponent, "MainLevelBGM");
+	mMainLevelBGM->SetupAttachment(RootComponent);
+
+	mMainLevelBGM->bAutoActivate = false;
+
+	ObjectFinder(USoundBase, SB_MainLevel, "/Script/Engine.SoundWave'/Game/Sound/BGM/MainLevelBGM.MainLevelBGM'");
+	if (SB_MainLevel.Succeeded())
+		mMainLevelBGM->SetSound(SB_MainLevel.Object);
+
+	ClassFinder(UGameplayEffect, GE_Init, "/Script/Engine.Blueprint'/Game/GAS/GameplayEffect/Character/GE_CharacterInfo.GE_CharacterInfo_C'");
+	if (GE_Init.Succeeded())
+		mGE_Init = GE_Init.Class;
+
 }
 
 void ACharacterState::BeginPlay()
@@ -70,7 +84,6 @@ void ACharacterState::BeginPlay()
 	Super::BeginPlay();
 
 	InitWidget();
-	InitLevelSequence();
 	InitCharacterGE();
 
 }
@@ -102,54 +115,9 @@ void ACharacterState::InitWidget()
 				mItemComponent->SetMainWidget(mHPWidget);
 			}
 
+			mStatusWidget = Cast<UCharacterInfoWidget>(mHPWidget->GetWidgetFromName(TEXT("WB_CharacterInfo")));
+
 			SetCharacterFace();
-		}
-	}
-}
-
-void ACharacterState::InitLevelSequence()
-{
-	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
-	if (!IsValid(GI))
-		return;
-
-	if (!GI->GetIsNewGame())
-	{
-		ULevelSequence* LS = LoadObject<ULevelSequence>(GetWorld(), TEXT("/Script/LevelSequence.LevelSequence'/Game/LevelSequence/LS_Start.LS_Start'"));
-		if (IsValid(LS))
-		{
-			FMovieSceneSequencePlaybackSettings Setting;
-			Setting.bHideHud = true;
-			ALevelSequenceActor* LSA = nullptr;
-			ULevelSequencePlayer* LSP = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), LS, Setting, LSA);
-			if (IsValid(LSP))
-			{
-				FInputModeUIOnly Mode;
-				GetPlayerController()->SetInputMode(Mode);
-
-				ShowMainWidget(false);
-				LSP->Play();
-				FQualifiedFrameTime Duration = LSP->GetDuration();
-				FTimerHandle Timer;
-				TWeakObjectPtr<ACharacterState> WeakThis(this);
-				GetWorld()->GetTimerManager().SetTimer(Timer,
-					[WeakThis]()
-					{
-						if (WeakThis.IsValid())
-						{
-							WeakThis->ShowMainWidget(true);
-							FInputModeGameOnly Mode;
-							APlayerController* PC = WeakThis->GetPlayerController();
-							if (IsValid(PC))
-							{
-								PC->SetInputMode(Mode);
-								PC->SetViewTarget(WeakThis->GetPawn());
-							}
-						}
-					},
-					Duration.AsSeconds(), false);
-			}
-
 		}
 	}
 }
@@ -219,15 +187,25 @@ void ACharacterState::ApplyGE_Init()
 {
 	FCharacterInfo Info = mTM_CharacterInfo[mCharacterName]; // 맵에 저장되어 있는 캐릭터 정보 사용
 
+	// FGameplayEffectContextHandle Context = mASC->MakeEffectContext(); // GE 실행 용 Context
+	// if (IsValid(mDA_CharacterGE->mGE_Init))
+	// {
+	// 	FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mDA_CharacterGE->mGE_Init, 1, Context); // 캐릭터 정보 초기화 용 GE Spec
+	// 
+	// 	for (auto& Data : Info.CharacterInfo) // 캐릭터 정보와 맞게 GE에게 넘겨줌
+	// 		Spec.Data->SetSetByCallerMagnitude(Data.Key, Data.Value);
+	// 
+	// 	mASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get()); // 캐릭터 정보를 GE로 초기화
+	// }
+
 	FGameplayEffectContextHandle Context = mASC->MakeEffectContext(); // GE 실행 용 Context
-	if (IsValid(mDA_CharacterGE->mGE_Init))
+	if (IsValid(mGE_Init))
 	{
-		FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mDA_CharacterGE->mGE_Init, 1, Context); // 캐릭터 정보 초기화 용 GE Spec
+		FGameplayEffectSpecHandle Spec = mASC->MakeOutgoingSpec(mGE_Init, 1, Context); // 캐릭터 정보 초기화 용 GE Spec
+		for (auto& Data : Info.CharacterInfo)
+			Spec.Data->SetSetByCallerMagnitude(Data.Key, Data.Value); // 캐릭터 정보와 맞게 GE에게 넘겨줌
 
-		for (auto& Data : Info.CharacterInfo) // 캐릭터 정보와 맞게 GE에게 넘겨줌
-			Spec.Data->SetSetByCallerMagnitude(Data.Key, Data.Value);
-
-		mASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get()); // 캐릭터 정보를 GE로 초기화
+		mASC->ApplyGameplayEffectSpecToSelf(*(Spec.Data.Get())); // 캐릭터 정보를 GE로 초기화
 	}
 
 	if (IsValid(mGE_HPRegenClass)) // 체력 자동 회복 GE
@@ -372,6 +350,19 @@ bool ACharacterState::PlayGA_Dodge()
 
 void ACharacterState::ShowMainWidget(bool A)
 {
+	if (!IsValid(mMainWidget))
+	{
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle,
+			[this, A]()
+			{
+				this->ShowMainWidget(A);
+			},
+			0.1, false
+		);
+		return;
+	}
+
 	if (A)
 		mMainWidget->SetVisibility(ESlateVisibility::Visible);
 	else
@@ -381,6 +372,7 @@ void ACharacterState::ShowMainWidget(bool A)
 void ACharacterState::ShowUI(bool A)
 {
 	ShowInventory(A);
+	ShowStatus(A);
 }
 
 void ACharacterState::ShowInventory(bool A)
@@ -418,6 +410,20 @@ void ACharacterState::ShowFKey(bool A)
 		return;
 
 	mHPWidget->ShowFKey(A);
+}
+
+void ACharacterState::ShowStatus(bool A)
+{
+	if (IsValid(mStatusWidget))
+	{
+		if (A)
+		{
+			mStatusWidget->SetVisibility(ESlateVisibility::Visible);
+			mStatusWidget->SetCharacterInfoText(mCharacterName);
+		}
+		else
+			mStatusWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+	}
 }
 
 void ACharacterState::PlayButtonAnimation(int32 Index)

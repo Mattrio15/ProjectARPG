@@ -17,6 +17,7 @@ class UDA_CharacterGE;
 
 class UCharacterHPWidget;
 class UCharacterInventory;
+class UCharacterInfoWidget;
 class UMiniGameWidget;
 
 USTRUCT(BlueprintType)
@@ -78,6 +79,8 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UCharacterInventory> mInventoryWidget; // 인벤토리 위젯
 	UPROPERTY()
+	TObjectPtr<UCharacterInfoWidget> mStatusWidget;
+	UPROPERTY()
 	TObjectPtr<UUserWidget> mMainWidget; // 메인 위젯
 	UPROPERTY()
 	TObjectPtr<UUserWidget> mPauseWidget; // 일시정지 위젯
@@ -89,6 +92,9 @@ protected:
 	TSubclassOf<UGameplayAbility> mGA_DodgeClass; // 회피 GA
 
 	UPROPERTY()
+	TSubclassOf<UGameplayEffect> mGE_Init; // 초기화 GE
+
+	UPROPERTY()
 	TSubclassOf<UGameplayEffect> mGE_HPRegenClass; // 체력 회복 GE
 
 	UPROPERTY()
@@ -97,6 +103,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UMiniGameWidget> mMiniGameWidget; // 미니게임 위젯
 
+	UPROPERTY()
+	TObjectPtr<UAudioComponent> mMainLevelBGM;
+
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const { return mASC; }
 
@@ -104,11 +113,7 @@ protected:
 	virtual void BeginPlay();
 
 	void InitWidget(); // 위젯 초기화 함수
-	void InitLevelSequence(); // 레벨 시퀀스 초기화 함수
 	void InitCharacterGE(); // 캐릭터 GE 초기화 함수
-
-protected:
-	void SetElemental(UAbilitySystemComponent* ASC, FGameplayTag Tag); // 몬스터의 속성 효과 설정
 
 public:
 	void InitAbilitySystemComponent(AActor* Avatar); // ASC 초기화
@@ -141,6 +146,7 @@ public:
 	void ShowInventory(bool A); // 인벤토리 보이기 여부
 	void ShowPause(); // 일시정지 위젯 보이기 여부
 	void ShowFKey(bool A); // F키 위젯 보이기 여부
+	void ShowStatus(bool A); // 스탯 창 보이기 여부
 
 	void PlayButtonAnimation(int32 Index); // UI에서 버튼 이펙트 실행 함수
 	void PlayQuickSlotAnimation(int32 Index); // UI에서 퀵슬롯 애니메이션 실행 함수
@@ -150,6 +156,7 @@ public:
 public:
 	UCharacterHPWidget* GetHPWidget() { return mHPWidget; }
 	FName GetCharacterName() { return mCharacterName; }
+	FCharacterInfo GetCharacterInfo() { return mTM_CharacterInfo[mCharacterName]; }
 	void SetCharacterName(FName Name) { mCharacterName = Name; }
 
 	UItemComponent* GetItemComponent() { return mItemComponent; }
