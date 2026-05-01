@@ -2,35 +2,64 @@
 
 
 #include "CharacterInfoWidget.h"
+#include "../../MyType.h"
 #include "../../Character/CharacterState.h"
+#include "../../GAS/AttributeDataAsset.h"
 
 void UCharacterInfoWidget::NativeOnInitialized()
 {
+	Super::NativeOnInitialized();
+
 }
 
 void UCharacterInfoWidget::NativeConstruct()
 {
+	Super::NativeConstruct();
+
+	Button_Close->OnClicked.AddDynamic(this, &UCharacterInfoWidget::CloseStatus);
+
 }
 
-void UCharacterInfoWidget::SetCharacterInfoText(FName Name)
+FText UCharacterInfoWidget::ChangeTextFromFloat(float A)
+{
+	FText Text = FText::FromString(FString::Printf(TEXT("%.0f"), A));
+	return Text;
+}
+
+void UCharacterInfoWidget::CloseStatus()
+{
+	ACharacterState* CS = GetOwningPlayer()->GetPlayerState<ACharacterState>();
+	if (IsValid(CS))
+		CS->ShowWidget(ECharacterWidgetType::Info, false);
+}
+
+void UCharacterInfoWidget::SetCharacterHPText(float HP)
 {
 	ACharacterState* CS = GetOwningPlayer()->GetPlayerState<ACharacterState>();
 	if (!IsValid(CS))
 		return;
 	FCharacterInfo CI = CS->GetCharacterInfo();
-	Text_Name->SetText(FText::FromName(Name));
-	int32 HP = CI.CharacterInfo[FGameplayTag::RequestGameplayTag(TEXT("Attribute.Data.Character.Health"))];
-	Text_HP->SetText(FText::FromString(FString::Printf(TEXT("%d"), HP)));
-	int32 Attack = CI.CharacterInfo[FGameplayTag::RequestGameplayTag(TEXT("Attribute.Data.Character.Attack"))];
-	Text_Attack->SetText(FText::FromString(FString::Printf(TEXT("%d"), Attack)));
-	int32 Defense = CI.CharacterInfo[FGameplayTag::RequestGameplayTag(TEXT("Attribute.Data.Character.Defense"))];
-	Text_Defense->SetText(FText::FromString(FString::Printf(TEXT("%d"), Defense)));
-	int32 MoveSpeed = CI.CharacterInfo[FGameplayTag::RequestGameplayTag(TEXT("Attribute.Data.Character.MoveSpeed"))];
-	Text_MoveSpeed->SetText(FText::FromString(FString::Printf(TEXT("%d"), MoveSpeed)));
-	int32 CriticalChance = CI.CharacterInfo[FGameplayTag::RequestGameplayTag(TEXT("Attribute.Data.Character.CriticalChance"))] * 100;
-	Text_CritChance->SetText(FText::FromString(FString::Printf(TEXT("%d"), CriticalChance)));
-	float CriticalRate = CI.CharacterInfo[FGameplayTag::RequestGameplayTag(TEXT("Attribute.Data.Character.CriticalRate"))];
-	Text_CritRate->SetText(FText::FromString(FString::Printf(TEXT("%.1f"), CriticalRate)));
-	float SkillRate = CI.CharacterInfo[FGameplayTag::RequestGameplayTag(TEXT("Attribute.Data.Character.SkillRate"))];
-	Text_SkillRate->SetText(FText::FromString(FString::Printf(TEXT("%.1f"), SkillRate)));
+	int32 RealHP = CI.CharacterInfo[FGameplayTag::RequestGameplayTag(TEXT("Attribute.Data.Character.Health"))] * HP;
+	Text_HP->SetText(FText::FromString(FString::Printf(TEXT("%d"), RealHP)));
+
+}
+
+void UCharacterInfoWidget::SetInfoText(FName Name)
+{
+	ACharacterState* CS = GetOwningPlayer()->GetPlayerState<ACharacterState>();
+	if (!IsValid(CS))
+		return;
+	TMap CI = CS->GetCharacterInfo().CharacterInfo;
+	UAttributeDataAsset* ADA = CS->GetAttributeTag();
+	Text_Name->SetText(FText::FromName(CS->GetCharacterName()));
+
+	Text_HP->SetText(ChangeTextFromFloat(CI[ADA->mHealthTag]));
+	Text_Attack->SetText(ChangeTextFromFloat(CI[ADA->mAttackTag]));
+	Text_Defense->SetText(ChangeTextFromFloat(CI[ADA->mDefenseTag]));
+	Text_MoveSpeed->SetText(ChangeTextFromFloat(CI[ADA->mMoveSpeedTag]));
+
+	Text_CritChance->SetText(ChangeTextFromFloat(CI[ADA->mCriticalChanceTag] * 100));
+	Text_CritRate->SetText(FText::FromString(FString::Printf(TEXT("%.1f"), CI[ADA->mCriticalRateTag])));
+	Text_SkillRate->SetText(FText::FromString(FString::Printf(TEXT("%.1f"), CI[ADA->mSkillRateTag])));
+
 }

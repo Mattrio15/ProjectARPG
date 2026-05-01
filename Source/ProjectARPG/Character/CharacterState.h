@@ -1,8 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "../Game_Info.h"
+#include "../MyType.h"
 #include "CharacterInfo.h"
 #include "GameFramework/PlayerState.h"
 #include "CharacterState.generated.h"
@@ -19,6 +20,8 @@ class UCharacterHPWidget;
 class UCharacterInventory;
 class UCharacterInfoWidget;
 class UMiniGameWidget;
+
+class UCharacterWidgetComponent;
 
 USTRUCT(BlueprintType)
 struct FCharacterGE : public FTableRowBase
@@ -49,62 +52,62 @@ public:
 	ACharacterState();
 
 protected:
-	FName mCharacterName; // Ä³¸¯ÅÍ ÀÌ¸§
-	TMap<FName, FCharacterInfo> mTM_CharacterInfo; // ÀÌ¸§¿¡ µû¸¥ Ä³¸¯ÅÍ Á¤º¸
+	FName mCharacterName; // ìºë¦­í„° ì´ë¦„
+	TMap<FName, FCharacterInfo> mTM_CharacterInfo; // ì´ë¦„ì— ë”°ë¥¸ ìºë¦­í„° ì •ë³´
 
 	UPROPERTY()
-	TObjectPtr<UDataTable> mDT_CharacterInfo; // Ä³¸¯ÅÍ Á¤º¸ µ¥ÀÌÅÍ Å×ÀÌºí
+	TObjectPtr<UDataTable> mDT_CharacterInfo; // ìºë¦­í„° ì •ë³´ ë°ì´í„° í…Œì´ë¸”
 
 	UPROPERTY()
-	TObjectPtr<UAbilitySystemComponent> mASC; // ¾îºô¸®Æ¼ ½Ã½ºÅÛ ÄÄÆ÷³ÍÆ®
+	TObjectPtr<UAbilitySystemComponent> mASC; // ì–´ë¹Œë¦¬í‹° ì‹œìŠ¤í…œ ì»´í¬ë„ŒíŠ¸
 	UPROPERTY()
-	TObjectPtr<UCharacterAttributeSet> mAS_Character; // Ä³¸¯ÅÍ ¾îÆ®¸®ºäÆ® ¼Â
+	TObjectPtr<UCharacterAttributeSet> mAS_Character; // ìºë¦­í„° ì–´íŠ¸ë¦¬ë·°íŠ¸ ì…‹
 
 	UPROPERTY()
-	TObjectPtr<UAttributeDataAsset> mDA_AttributeTag; // ¾îÆ®¸®ºäÆ® µ¥ÀÌÅÍ ¾Ö¼Â
+	TObjectPtr<UAttributeDataAsset> mDA_AttributeTag; // ì–´íŠ¸ë¦¬ë·°íŠ¸ ë°ì´í„° ì• ì…‹
 
 	UPROPERTY()
-	TObjectPtr<UDA_CharacterGE> mDA_CharacterGE; // Ä³¸¯ÅÍ°¡ »ç¿ëÇÒ GE µ¥ÀÌÅÍ ¾Ö¼Â
+	TObjectPtr<UDA_CharacterGE> mDA_CharacterGE; // ìºë¦­í„°ê°€ ì‚¬ìš©í•  GE ë°ì´í„° ì• ì…‹
 	UPROPERTY()
-	TObjectPtr<UDataTable> mDT_CharacterGE; // Ä³¸¯ÅÍ°¡ »ç¿ëÇÒ GE µ¥ÀÌÅÍ Å×ÀÌºí
+	TObjectPtr<UDataTable> mDT_CharacterGE; // ìºë¦­í„°ê°€ ì‚¬ìš©í•  GE ë°ì´í„° í…Œì´ë¸”
 	UPROPERTY()
-	TMap<FName, FCharacterGE> mTM_CharacterGE; // Ä³¸¯ÅÍ°¡ »ç¿ëÇÒ GE¸¦ ÀÌ¸§À¸·Î Ã£À» ¸Ê
+	TMap<FName, FCharacterGE> mTM_CharacterGE; // ìºë¦­í„°ê°€ ì‚¬ìš©í•  GEë¥¼ ì´ë¦„ìœ¼ë¡œ ì°¾ì„ ë§µ
 	UPROPERTY()
-	TObjectPtr<UAbilityDataAsset> mDA_CharacterGA; // Ä³¸¯ÅÍ°¡ »ç¿ëÇÒ ¾îºô¸®Æ¼ µ¥ÀÌÅÍ ¾Ö¼Â
+	TObjectPtr<UAbilityDataAsset> mDA_CharacterGA; // ìºë¦­í„°ê°€ ì‚¬ìš©í•  ì–´ë¹Œë¦¬í‹° ë°ì´í„° ì• ì…‹
 
 	UPROPERTY()
-	TSubclassOf<UUserWidget> mMainWidgetClass; // ¸ŞÀÎ À§Á¬ Å¬·¡½º
+	TSubclassOf<UUserWidget> mMainWidgetClass; // ë©”ì¸ ìœ„ì ¯ í´ë˜ìŠ¤
 	UPROPERTY()
-	TObjectPtr<UCharacterHPWidget> mHPWidget; // HP À§Á¬
+	TObjectPtr<UCharacterHPWidget> mHPWidget; // HP ìœ„ì ¯
 	UPROPERTY()
-	TObjectPtr<UCharacterInventory> mInventoryWidget; // ÀÎº¥Åä¸® À§Á¬
+	TObjectPtr<UCharacterInventory> mInventoryWidget; // ì¸ë²¤í† ë¦¬ ìœ„ì ¯
 	UPROPERTY()
 	TObjectPtr<UCharacterInfoWidget> mStatusWidget;
 	UPROPERTY()
-	TObjectPtr<UUserWidget> mMainWidget; // ¸ŞÀÎ À§Á¬
+	TObjectPtr<UUserWidget> mMainWidget; // ë©”ì¸ ìœ„ì ¯
 	UPROPERTY()
-	TObjectPtr<UUserWidget> mPauseWidget; // ÀÏ½ÃÁ¤Áö À§Á¬
+	TObjectPtr<UUserWidget> mPauseWidget; // ì¼ì‹œì •ì§€ ìœ„ì ¯
 
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UItemComponent> mItemComponent; // ¾ÆÀÌÅÛ ÄÄÆ÷³ÍÆ®
+	TObjectPtr<UItemComponent> mItemComponent; // ì•„ì´í…œ ì»´í¬ë„ŒíŠ¸
 	
 	UPROPERTY()
-	TSubclassOf<UGameplayAbility> mGA_DodgeClass; // È¸ÇÇ GA
+	TSubclassOf<UGameplayAbility> mGA_DodgeClass; // íšŒí”¼ GA
 
 	UPROPERTY()
-	TSubclassOf<UGameplayEffect> mGE_Init; // ÃÊ±âÈ­ GE
+	TSubclassOf<UGameplayEffect> mGE_Init; // ì´ˆê¸°í™” GE
 
 	UPROPERTY()
-	TSubclassOf<UGameplayEffect> mGE_HPRegenClass; // Ã¼·Â È¸º¹ GE
+	TSubclassOf<UGameplayEffect> mGE_HPRegenClass; // ì²´ë ¥ íšŒë³µ GE
 
 	UPROPERTY()
-	TSubclassOf<UGameplayEffect> mGE_ManaClass; // °ø°İ½Ã ¸¶³ª È¸º¹ GE
+	TSubclassOf<UGameplayEffect> mGE_ManaClass; // ê³µê²©ì‹œ ë§ˆë‚˜ íšŒë³µ GE
 
 	UPROPERTY()
-	TObjectPtr<UMiniGameWidget> mMiniGameWidget; // ¹Ì´Ï°ÔÀÓ À§Á¬
+	TObjectPtr<UMiniGameWidget> mMiniGameWidget; // ë¯¸ë‹ˆê²Œì„ ìœ„ì ¯
 
-	UPROPERTY()
-	TObjectPtr<UAudioComponent> mMainLevelBGM;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UCharacterWidgetComponent> mWidgetComponent;
 
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const { return mASC; }
@@ -112,59 +115,61 @@ public:
 protected:
 	virtual void BeginPlay();
 
-	void InitWidget(); // À§Á¬ ÃÊ±âÈ­ ÇÔ¼ö
-	void InitCharacterGE(); // Ä³¸¯ÅÍ GE ÃÊ±âÈ­ ÇÔ¼ö
+	void InitWidget(); // ìœ„ì ¯ ì´ˆê¸°í™” í•¨ìˆ˜
+	void InitCharacterGE(); // ìºë¦­í„° GE ì´ˆê¸°í™” í•¨ìˆ˜
 
 public:
-	void InitAbilitySystemComponent(AActor* Avatar); // ASC ÃÊ±âÈ­
+	void InitAbilitySystemComponent(AActor* Avatar); // ASC ì´ˆê¸°í™”
 
 protected:
-	void SetTMCharacterGE(); // Ä³¸¯ÅÍ GE ¸Ê ¼³Á¤ ÇÔ¼ö
-	void SetCharacterMoveSpeed(); // Ä³¸¯ÅÍ ÀÌµ¿¼Óµµ ¼³Á¤ ÇÔ¼ö
-	void ApplyGE_Init(); // ÃÊ±âÈ­ GE Àû¿ë ÇÔ¼ö
-	void ApplyCharacterGA(); // Ä³¸¯ÅÍ GA Àû¿ë ÇÔ¼ö
+	void SetTMCharacterGE(); // ìºë¦­í„° GE ë§µ ì„¤ì • í•¨ìˆ˜
+	void SetCharacterMoveSpeed(); // ìºë¦­í„° ì´ë™ì†ë„ ì„¤ì • í•¨ìˆ˜
+	void ApplyGE_Init(); // ì´ˆê¸°í™” GE ì ìš© í•¨ìˆ˜
+	void ApplyCharacterGA(); // ìºë¦­í„° GA ì ìš© í•¨ìˆ˜
+	void SetStatusText();
 
 public:
-	void SaveCharacterInfo(); // Ä³¸¯ÅÍ Á¤º¸ ÀúÀå
+	void SaveCharacterInfo(); // ìºë¦­í„° ì •ë³´ ì €ì¥
 
 protected:
 	FGameplayEffectSpecHandle GetGameplayEffectSpecHandle(TSubclassOf<UGameplayEffect> GEClass);
 	void PlayGameplayEffect(TSubclassOf<UGameplayEffect> GEClass, FGameplayTag GT_Elemental, UAbilitySystemComponent* ASC);
 
 public:
-	void PlayGE_Attack(FName Name, UAbilitySystemComponent* ASC); // °ø°İ ¿ë GE ½ÇÇà ÇÔ¼ö
-	void PlayGE_CounterAttack(FName Name, UAbilitySystemComponent* ASC); // ÆĞ¸µ Áö¿ø ¿ë GE ½ÇÇà ÇÔ¼ö
-	void PlayGE_Skill(FName Name, UAbilitySystemComponent* ASC); // ½ºÅ³ ¿ë GE ½ÇÇà ÇÔ¼ö
+	void PlayGE_Attack(FName Name, UAbilitySystemComponent* ASC); // ê³µê²© ìš© GE ì‹¤í–‰ í•¨ìˆ˜
+	void PlayGE_CounterAttack(FName Name, UAbilitySystemComponent* ASC); // íŒ¨ë§ ì§€ì› ìš© GE ì‹¤í–‰ í•¨ìˆ˜
+	void PlayGE_Skill(FName Name, UAbilitySystemComponent* ASC); // ìŠ¤í‚¬ ìš© GE ì‹¤í–‰ í•¨ìˆ˜
 
-	bool PlayGA_Dodge(); // È¸ÇÇ ¿ë GA ½ÇÇà ÇÔ¼ö
+	bool PlayGA_Dodge(); // íšŒí”¼ ìš© GA ì‹¤í–‰ í•¨ìˆ˜
 
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void ShowMainWidget(bool A); // ¸ŞÀÎ À§Á¬ º¸ÀÌ±â ¿©ºÎ
-	void ShowUI(bool A); // UI º¸ÀÌ±â ¿©ºÎ
-	void ShowInventory(bool A); // ÀÎº¥Åä¸® º¸ÀÌ±â ¿©ºÎ
-	void ShowPause(); // ÀÏ½ÃÁ¤Áö À§Á¬ º¸ÀÌ±â ¿©ºÎ
-	void ShowFKey(bool A); // FÅ° À§Á¬ º¸ÀÌ±â ¿©ºÎ
-	void ShowStatus(bool A); // ½ºÅÈ Ã¢ º¸ÀÌ±â ¿©ºÎ
+	void ShowMainWidget(bool A); // ë©”ì¸ ìœ„ì ¯ ë³´ì´ê¸° ì—¬ë¶€
+	void ShowUI(bool A); // UI ë³´ì´ê¸° ì—¬ë¶€
 
-	void PlayButtonAnimation(int32 Index); // UI¿¡¼­ ¹öÆ° ÀÌÆåÆ® ½ÇÇà ÇÔ¼ö
-	void PlayQuickSlotAnimation(int32 Index); // UI¿¡¼­ Äü½½·Ô ¾Ö´Ï¸ŞÀÌ¼Ç ½ÇÇà ÇÔ¼ö
+	void ShowWidget(ECharacterWidgetType WidgetType, bool A);
 
-	void PlayMiniGame(); // ¹Ì´Ï°ÔÀÓ ½ÇÇà ÇÔ¼ö
+	void PlayButtonAnimation(int32 Index); // UIì—ì„œ ë²„íŠ¼ ì´í™íŠ¸ ì‹¤í–‰ í•¨ìˆ˜
+	void PlayQuickSlotAnimation(int32 Index); // UIì—ì„œ í€µìŠ¬ë¡¯ ì• ë‹ˆë©”ì´ì…˜ ì‹¤í–‰ í•¨ìˆ˜
+
+	void PlayMiniGame(); // ë¯¸ë‹ˆê²Œì„ ì‹¤í–‰ í•¨ìˆ˜
 
 public:
 	UCharacterHPWidget* GetHPWidget() { return mHPWidget; }
 	FName GetCharacterName() { return mCharacterName; }
 	FCharacterInfo GetCharacterInfo() { return mTM_CharacterInfo[mCharacterName]; }
-	void SetCharacterName(FName Name) { mCharacterName = Name; }
-
 	UItemComponent* GetItemComponent() { return mItemComponent; }
+	UAttributeDataAsset* GetAttributeTag() { return mDA_AttributeTag; }
+
+
+	void SetCharacterName(FName Name) { mCharacterName = Name; }	
+
 
 	UFUNCTION(BlueprintCallable)
-	void GetItem(UItemDataAsset* Item); // ¾ÆÀÌÅÛ È¹µæ ÇÔ¼ö
+	void GetItem(UItemDataAsset* Item); // ì•„ì´í…œ íšë“ í•¨ìˆ˜
 
-	void SetCharacterFace(); // Ä³¸¯ÅÍ ÃÊ»óÈ­ ¼³Á¤ ÇÔ¼ö
+	void SetCharacterFace(); // ìºë¦­í„° ì´ˆìƒí™” ì„¤ì • í•¨ìˆ˜
 
 public:
 	FSaveGameData GetSaveGameData();

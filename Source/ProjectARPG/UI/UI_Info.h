@@ -11,4 +11,4 @@
 #include "Components/CanvasPanel.h"
 #include "Components/TextBlock.h"
 
-#define GetMyWidget(Type, Name) Cast<Type>(GetWidgetFromName(TEXT("Name")));
+#define GetMyWidget(Type, Name) Cast<Type>(GetWidgetFromName(TEXT(Name)));

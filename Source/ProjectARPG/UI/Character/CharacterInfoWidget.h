@@ -32,11 +32,21 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Text_SkillRate;
 
+	UPROPERTY(meta = (BindWidget))
+	UButton* Button_Close;
+
 protected:
 	virtual void NativeOnInitialized();
 	virtual void NativeConstruct();
 
+protected:
+	FText ChangeTextFromFloat(float A);
+
+	UFUNCTION()
+	void CloseStatus();
+
 public:
-	void SetCharacterInfoText(FName Name);
+	void SetCharacterHPText(float HP);
+	void SetInfoText(FName Name);
 
 };

@@ -3,6 +3,7 @@
 
 #include "CharacterState.h"
 #include "CharacterBase.h"
+#include "CharacterController.h"
 #include "ItemComponent.h"
 #include "DA_CharacterGE.h"
 #include "../GAS/AttributeSet/CharacterAttributeSet.h"
@@ -15,8 +16,7 @@
 #include "../UI/Character/CharacterInfoWidget.h"
 #include "../UI/MiniGame/MiniGameWidget.h"
 #include "../MyGameInstance.h"
-#include "LevelSequence.h"
-#include "LevelSequencePlayer.h"
+#include "CharacterWidgetComponent.h"
 
 ACharacterState::ACharacterState()
 {
@@ -56,7 +56,7 @@ ACharacterState::ACharacterState()
 	if (GA_Dodge.Succeeded())
 		mGA_DodgeClass = GA_Dodge.Class;
 
-	ClassFinder(UGameplayEffect, GE_HPRegen, "/Script/Engine.Blueprint'/Game/GAS/GameplayEffect/Character/GE_Mana.GE_Mana_C'");
+	ClassFinder(UGameplayEffect, GE_HPRegen, "/Script/Engine.Blueprint'/Game/GAS/GameplayEffect/Character/GE_HealthRegen.GE_HealthRegen_C'");
 	if (GE_HPRegen.Succeeded())
 		mGE_HPRegenClass = GE_HPRegen.Class;
 
@@ -64,18 +64,11 @@ ACharacterState::ACharacterState()
 	if (GE_Mana.Succeeded())
 		mGE_ManaClass = GE_Mana.Class;
 
-	mMainLevelBGM = MyObject(UAudioComponent, "MainLevelBGM");
-	mMainLevelBGM->SetupAttachment(RootComponent);
-
-	mMainLevelBGM->bAutoActivate = false;
-
-	ObjectFinder(USoundBase, SB_MainLevel, "/Script/Engine.SoundWave'/Game/Sound/BGM/MainLevelBGM.MainLevelBGM'");
-	if (SB_MainLevel.Succeeded())
-		mMainLevelBGM->SetSound(SB_MainLevel.Object);
-
 	ClassFinder(UGameplayEffect, GE_Init, "/Script/Engine.Blueprint'/Game/GAS/GameplayEffect/Character/GE_CharacterInfo.GE_CharacterInfo_C'");
 	if (GE_Init.Succeeded())
 		mGE_Init = GE_Init.Class;
+
+	mWidgetComponent = MyObject(UCharacterWidgetComponent, "WidgetComponent");
 
 }
 
@@ -90,36 +83,58 @@ void ACharacterState::BeginPlay()
 
 void ACharacterState::InitWidget()
 {
-	if (IsValid(mMainWidgetClass))
+	if (!IsValid(mWidgetComponent))
 	{
-		mMainWidget = CreateWidget<UUserWidget>(GetWorld(), mMainWidgetClass);
-		if (IsValid(mMainWidget))
-		{
-			mHPWidget = Cast<UCharacterHPWidget>(mMainWidget->GetWidgetFromName(TEXT("WB_CharacterHP")));
-			mPauseWidget = Cast<UUserWidget>(mMainWidget->GetWidgetFromName(TEXT("WB_CharacterPause")));
-		}
-		if (IsValid(mHPWidget))
-		{
-			mMainWidget->AddToViewport();
-
-			mAS_Character->OnHealthChanged.AddUObject(mHPWidget, &UCharacterHPWidget::SetHPBar);
-			mAS_Character->OnManaChanged.AddUObject(mHPWidget, &UCharacterHPWidget::SetMPBar);
-
-			mInventoryWidget = Cast<UCharacterInventory>(mHPWidget->GetWidgetFromName(TEXT("WB_CharacterInventory")));
-			if (IsValid(mInventoryWidget))
-			{
-				mInventoryWidget->SetVisibility(ESlateVisibility::Hidden);
-				mInventoryWidget->SetItemComponent(mItemComponent);
-				mItemComponent->SetAbilitySystemComponent(mASC);
-				mItemComponent->SetInventory(mInventoryWidget);
-				mItemComponent->SetMainWidget(mHPWidget);
-			}
-
-			mStatusWidget = Cast<UCharacterInfoWidget>(mHPWidget->GetWidgetFromName(TEXT("WB_CharacterInfo")));
-
-			SetCharacterFace();
-		}
+		Test(TEXT("WidgetComponent Is Invalid!"));
+		return;
 	}
+
+	ACharacterController* CC = Cast<ACharacterController>(GetPlayerController());
+	if (!IsValid(CC))
+		return;
+
+	if (!mWidgetComponent->SetState(this) || !mWidgetComponent->SetController(CC))
+	{
+		Test(TEXT("State of Controller Is Invalid!"));
+		return;
+	}
+	mWidgetComponent->InitWidget();
+
+	// if (IsValid(mMainWidgetClass))
+	// {
+	// 	mMainWidget = CreateWidget<UUserWidget>(GetWorld(), mMainWidgetClass);
+	// 	if (IsValid(mMainWidget))
+	// 	{
+	// 		mHPWidget = Cast<UCharacterHPWidget>(mMainWidget->GetWidgetFromName(TEXT("WB_CharacterHP")));
+	// 		mPauseWidget = Cast<UUserWidget>(mMainWidget->GetWidgetFromName(TEXT("WB_CharacterPause")));
+	// 	}
+	// 	if (IsValid(mHPWidget))
+	// 	{
+	// 		mMainWidget->AddToViewport();
+	// 
+	// 		mAS_Character->OnHealthChanged.AddUObject(mHPWidget, &UCharacterHPWidget::SetHPBar);
+	// 		mAS_Character->OnManaChanged.AddUObject(mHPWidget, &UCharacterHPWidget::SetMPBar);
+	// 
+	// 		mInventoryWidget = Cast<UCharacterInventory>(mHPWidget->GetWidgetFromName(TEXT("WB_CharacterInventory")));
+	// 		if (IsValid(mInventoryWidget))
+	// 		{
+	// 			mInventoryWidget->SetVisibility(ESlateVisibility::Hidden);
+	// 			mInventoryWidget->SetItemComponent(mItemComponent);
+	// 			mItemComponent->SetAbilitySystemComponent(mASC);
+	// 			mItemComponent->SetInventory(mInventoryWidget);
+	// 			mItemComponent->SetMainWidget(mHPWidget);
+	// 		}
+	// 
+	// 		mStatusWidget = Cast<UCharacterInfoWidget>(mHPWidget->GetWidgetFromName(TEXT("WB_CharacterInfo")));
+	// 		if (IsValid(mStatusWidget))
+	// 		{
+	// 			mStatusWidget->SetVisibility(ESlateVisibility::Hidden);
+	// 			mAS_Character->OnHealthChanged.AddUObject(mStatusWidget, &UCharacterInfoWidget::SetCharacterHPText);
+	// 		}
+	// 
+	// 		SetCharacterFace();
+	// 	}
+	// }
 }
 
 void ACharacterState::InitCharacterGE()
@@ -157,6 +172,8 @@ void ACharacterState::InitAbilitySystemComponent(AActor* Avatar)
 	ApplyCharacterGA(); // GA 부여
 
 	SetCharacterFace(); // 캐릭터 초상화 설정
+
+	SetStatusText();
 }
 
 void ACharacterState::SetTMCharacterGE()
@@ -232,6 +249,22 @@ void ACharacterState::ApplyCharacterGA()
 
 	FGameplayAbilitySpec DodgeSpec = FGameplayAbilitySpec(mGA_DodgeClass); // 회피 어빌리티 부여
 	mASC->GiveAbility(mGA_DodgeClass);
+}
+
+void ACharacterState::SetStatusText()
+{
+	if(IsValid(mStatusWidget))
+		mStatusWidget->SetInfoText(mCharacterName);
+	else
+	{
+		FTimerHandle Timer;
+		GetWorld()->GetTimerManager().SetTimer(Timer,
+			[this]()
+			{
+				this->SetStatusText();
+			},
+			0.1, false);
+	}
 }
 
 void ACharacterState::SaveCharacterInfo()
@@ -371,59 +404,14 @@ void ACharacterState::ShowMainWidget(bool A)
 
 void ACharacterState::ShowUI(bool A)
 {
-	ShowInventory(A);
-	ShowStatus(A);
+	ShowWidget(ECharacterWidgetType::Inventory, A);
+	ShowWidget(ECharacterWidgetType::Info, A);
 }
 
-void ACharacterState::ShowInventory(bool A)
+void ACharacterState::ShowWidget(ECharacterWidgetType WidgetType, bool A)
 {
-	if (IsValid(mInventoryWidget))
-	{
-		if (A)
-			mInventoryWidget->SetVisibility(ESlateVisibility::Visible);
-		else
-			mInventoryWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
-	}
-}
-
-void ACharacterState::ShowPause()
-{
-	if (!IsValid(mPauseWidget))
-	{
-		Log(TEXT("PauseWidget Is Invalid!"));
-		return;
-	}
-
-	mPauseWidget->SetVisibility(ESlateVisibility::Visible);
-
-	UGameplayStatics::SetGamePaused(GetWorld(), true);
-
-	FInputModeUIOnly Mode;
-	GetPlayerController()->SetInputMode(Mode);
-	GetPlayerController()->bShowMouseCursor = true;
-
-}
-
-void ACharacterState::ShowFKey(bool A)
-{
-	if (!IsValid(mHPWidget))
-		return;
-
-	mHPWidget->ShowFKey(A);
-}
-
-void ACharacterState::ShowStatus(bool A)
-{
-	if (IsValid(mStatusWidget))
-	{
-		if (A)
-		{
-			mStatusWidget->SetVisibility(ESlateVisibility::Visible);
-			mStatusWidget->SetCharacterInfoText(mCharacterName);
-		}
-		else
-			mStatusWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
-	}
+	if (IsValid(mWidgetComponent))
+		mWidgetComponent->ShowWidget(WidgetType, A);
 }
 
 void ACharacterState::PlayButtonAnimation(int32 Index)

@@ -7,6 +7,7 @@
 #include "../InputData/InputData.h"
 #include "CharacterController.h"
 #include "ItemComponent.h"
+#include "../MyType.h"
 
 
 ACharacterBase::ACharacterBase()
@@ -420,7 +421,7 @@ void ACharacterBase::CharacterInventory(const FInputActionInstance& Instance)
 	ShowUI(mShowUI);
 	ACharacterState* CS = GetPlayerState<ACharacterState>();
 	if (IsValid(CS))
-		CS->ShowInventory(mShowInventory);
+		CS->ShowWidget(ECharacterWidgetType::Inventory, mShowInventory);
 }
 
 void ACharacterBase::CharacterQuickSlot_1(const FInputActionInstance& Instance)
@@ -466,7 +467,7 @@ void ACharacterBase::CharacterPause(const FInputActionInstance& Instance)
 {
 	ACharacterState* CS = GetPlayerState<ACharacterState>();
 	if (IsValid(CS))
-		CS->ShowPause();
+		CS->ShowWidget(ECharacterWidgetType::Pause, true);
 }
 
 void ACharacterBase::CharacterFKey(const FInputActionInstance& Instance)
@@ -487,7 +488,7 @@ void ACharacterBase::CharacterStatus(const FInputActionInstance& Instance)
 	ShowUI(mShowUI);
 	ACharacterState* CS = GetPlayerState<ACharacterState>();
 	if (IsValid(CS))
-		CS->ShowStatus(mShowStatus);
+		CS->ShowWidget(ECharacterWidgetType::Info, mShowStatus);
 }
 
 void ACharacterBase::CharacterDisappear()
@@ -566,7 +567,7 @@ void ACharacterBase::SetNPCTalking(bool A)
 
 	mNPCTalking = A;
 
-	CS->ShowFKey(mNPCTalking);
+	CS->ShowWidget(ECharacterWidgetType::FKey, mNPCTalking);
 }
 
 void ACharacterBase::CounterChange()

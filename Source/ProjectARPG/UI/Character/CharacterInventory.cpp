@@ -5,6 +5,7 @@
 #include "../../Character/CharacterState.h"
 #include "Entry_Inventory.h"
 #include "../../Character/ItemComponent.h"
+#include "../../MyType.h"
 
 void UCharacterInventory::NativeOnInitialized()
 {
@@ -30,7 +31,7 @@ void UCharacterInventory::InventoryClose()
 {
 	ACharacterState* CS = GetOwningPlayer()->GetPlayerState<ACharacterState>();
 	if (IsValid(CS))
-		CS->ShowInventory(false);
+		CS->ShowWidget(ECharacterWidgetType::Inventory, false);
 }
 
 void UCharacterInventory::UpdateInventory(UItemDataAsset* Item)
